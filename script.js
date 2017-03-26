@@ -5,7 +5,7 @@ $("#adder").click(function(){
 
     $.ajax({
         type: "POST",
-        url: "/",
+        url: "/ajax",
         success: function(result){
             $(".items").append(result + "<br>");
         }

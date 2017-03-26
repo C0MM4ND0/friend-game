@@ -5,10 +5,10 @@ const path = require("path");                           // access paths
 const express = require("express");                     // express
 const MongoClient = require('mongodb').MongoClient      // talk to mongo
 const bodyParser = require('body-parser')               // parse request body
-// const cookieParser = require('cookie-parser');          // allows us to read cookies
+// const cookieParser = require('cookie-parser');        // allows us to read cookies
 
 const app = express();
-app.set("port", process.env.PORT || 3000)
+app.set("port", process.env.PORT || 3000)				// we're gonna start a server on whatever the environment port is or on 3000
 app.set("views", path.join(__dirname, "views"));        // tells us where our views are
 app.set("view engine", "ejs");                          // tells us what view engine to use
 
@@ -26,7 +26,11 @@ app.get("/", function(req, res){
     res.render("index");
 });
 
-app.post("/", function(req, res){
+app.get("/ajax", function(req, res){
+    res.render("ajax");
+});
+
+app.post("/ajax", function(req, res){
     var answer = main.giveRandom();
     res.send(answer);
 });
