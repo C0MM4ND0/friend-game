@@ -67,7 +67,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	app.post("/ajax-2", function(req, res){
 
 		var queryObject = {
-	    	item: "owl"
+	    	item: "oranges"
 	    }
 
 	    var answer = dataops.find(db, "random", queryObject);

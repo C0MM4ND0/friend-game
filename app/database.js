@@ -12,15 +12,15 @@ function add(db, collection, obj){
 
 function find(db, col, obj){
 
-	    db.collection(col).find( {}, function(err, result){
-	    	if (err){
+	db.collection(col).find(obj).toArray(function(err, result){
+		if (err){
 				console.log("MAYDAY! MAYDAY! Crashing.");
 				return console.log(err);
 			}
 
+			console.log(result);
+	})
 
-			console.log("Fetched " + result[0]);
-	    });
 }
 
 
