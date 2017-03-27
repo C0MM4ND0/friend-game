@@ -13,3 +13,16 @@ $("#adder").click(function(){
 
 });
 
+
+$("#finder").click(function(){
+	
+    $.ajax({
+        type: "POST",
+        url: "/ajax-2",
+        success: function(result){
+            console.log(result);
+        }
+    })
+
+});
+
