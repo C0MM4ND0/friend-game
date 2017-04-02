@@ -34,14 +34,20 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 /* */
+	
 
-
-
-
-	app.use(function(req, res, next){                  // logs request URL
+	app.use(function(req, res, next){                  							// logs request URL
 	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);
 	    next();
 	});
+
+
+	
+	app.use(bodyParser.urlencoded({
+	    extended: true
+	}));
+
+	app.use(bodyParser.json()); 						// for parsing application/json
 
 	app.get("/", function(req, res){
 	    res.render("index");
@@ -65,13 +71,16 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 	app.post("/ajax-2", function(req, res){
+		console.log("SERVER: request data is: " + JSON.stringify(req.body));	
 
-		var queryObject = {
-	    	item: "oranges"
-	    }
+		if(req.body.item == ""){			// if we send an empty query, let's return everything
+			req.body = {};
+		}
 
-	    var answer = dataops.find(db, "random", queryObject);
-	    res.send(answer);
+	    dataops.find(db, "random", req.body, res);
+
+	    // res.send is called straight in the database.js function, right after the data is retrieved
+   
 	});
 
 

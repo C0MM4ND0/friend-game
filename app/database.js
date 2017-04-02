@@ -1,6 +1,6 @@
-function add(db, collection, obj){
+function add(db, col, obj){
 
-	    db.collection(collection).save(obj, function( err, result){
+	    db.collection(col).save(obj, function( err, result){
 	    	if (err){
 				console.log("MAYDAY! MAYDAY! Crashing.");
 				return console.log(err);
@@ -10,7 +10,7 @@ function add(db, collection, obj){
 }
 
 
-function find(db, col, obj){
+function find(db, col, obj, res){
 
 	db.collection(col).find(obj).toArray(function(err, result){
 		if (err){
@@ -18,7 +18,8 @@ function find(db, col, obj){
 				return console.log(err);
 			}
 
-			console.log(result);
+			console.log("SERVER: actual db pull: " + JSON.stringify(result));
+			res.send(result);
 	})
 
 }

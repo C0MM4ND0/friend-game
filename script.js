@@ -16,11 +16,23 @@ $("#adder").click(function(){
 
 $("#finder").click(function(){
 	
+    sample = {
+        item: $("#item-type").val()
+    }
+
+    console.log("CLIENT: sending to server..." + JSON.stringify(sample));
+
     $.ajax({
         type: "POST",
+        contentType: "application/json",
+        dataType: "json",
         url: "/ajax-2",
+        data: JSON.stringify(sample),
+
         success: function(result){
-            console.log(result);
+            console.log("CLIENT: Received a response from the server.");
+            console.log(JSON.stringify(result));
+            $(".result").text(result.length + " results found for search: " + sample.item)
         }
     })
 
