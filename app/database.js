@@ -1,4 +1,4 @@
-function add(db, col, obj){
+function add(db, col, obj, res){
 
 	    db.collection(col).save(obj, function( err, result){
 	    	if (err){
@@ -6,6 +6,7 @@ function add(db, col, obj){
 				return console.log(err);
 			}
 			console.log("Saved the object to our database!");
+			res.send(obj);
 	    })
 }
 
