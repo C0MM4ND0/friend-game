@@ -14,7 +14,7 @@ $("#adder").click(function(){
         url: "/ajax",
         data: itemToSend,
         success: function(result){
-            $(".result").text("Saved " +  itemToSend.item)
+            $(".result").html("Saved <span class = 'query'>" +  itemToSend.item + "</span>")
         }
     })
 
@@ -39,7 +39,7 @@ $("#finder").click(function(){
         success: function(result){
             console.log("CLIENT: Received a response from the server.");
             console.log(JSON.stringify(result));
-            $(".result").text(result.length + " results found for search: " + itemToSend.item)
+            $(".result").html(result.length + " results found for search: <span class = 'query'>" + itemToSend.item + "</span>");
         }
     })
 

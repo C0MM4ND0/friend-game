@@ -53,13 +53,17 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	    res.render("index");
 	});
 
+
+/* ----------------- AJAX experiments ----------------- */
 	app.get("/ajax", function(req, res){
 	    res.render("ajax");
 	});
 
 	app.post("/ajax", function(req, res){
 		console.log("SERVER: request to SAVE data is: " + JSON.stringify(req.body));
-	    dataops.add(db, "random", req.body, res);
+	    dataops.add(db, "random", req.body, res, function(){
+	    	res.send(req.body);
+	    });
 	    
 	});
 
@@ -71,15 +75,51 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			req.body = {};
 		}
 
-	    dataops.find(db, "random", req.body, res);
+	    dataops.find(db, "random", req.body, res, function(result){
+	    	res.send(result);
+	    });
 
 	    // res.send is called straight in the database.js function, right after the data is retrieved
    
 	});
 
+/* ----------------- end AJAX experiments ----------------- */
+
+
+	app.get("/game/:id", function(req, res){
+		
+		console.log("hey!");
+		console.log("Fetching game " + req.params.id);
+
+		// we need to check if a player with this ID exsits. If true, fetch all of that player's info. 
+		// If false, redirect to create new player page
+
+
+		res.send("this is game " + req.params.id);
+	});
+
+	app.get("/newplayer", function(req, res){
+		
+		res.render("newplayer");
+	});
+
+
+	app.post("/newplayer", function(req, res){
+		console.log(req.body);
+		dataops.add(db, "player", req.body, res, function(){
+			res.render("newplayer");
+		});
+	});
 
 
 
+
+
+
+
+	app.get("/ajax", function(req, res){
+	    res.render("ajax");
+	});
 
 	app.use(function(req, res) {
 	    res.status(404);

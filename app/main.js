@@ -3,5 +3,11 @@ function giveRandom(){
     return array[Math.floor(Math.random()*array.length)];
 }
 
+function checkIf(){
+    
+}
+
+
+
 
 module.exports.giveRandom = giveRandom;
