@@ -57,6 +57,5 @@ $("#finder").click(function(){
     } else {
         $(".result").html("Cannot search for empty item.");
     }items
-
 });
 

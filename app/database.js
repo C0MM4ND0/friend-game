@@ -26,7 +26,39 @@ function find(db, col, obj, res, callback){
 }
 
 
+function addNewPlayer(db, col, player, res, callback){
+	
+	db.collection(col).count(player, function checkIfExists(err, result){
+		if (err){
+			console.log("MAYDAY! MAYDAY! Crashing.");
+			return console.log(err);
+		}
+
+		console.log("players in the database: " + JSON.stringify(result));
+
+		if (result > 0){
+			console.log("this player already exists");
+			callback("this player already exists");
+		} else {
+			db.collection(col).save(player, function savePlayer(err, result) {
+				if (err){
+					console.log("MAYDAY! MAYDAY! Crashing.");
+					return console.log(err);
+				}
+				callback(result.ops[0]);
+			});
+		}
+		
+	});
+
+
+}
+
 
 
 module.exports.add = add;
 module.exports.find = find;
+module.exports.addNewPlayer = addNewPlayer;
+
+
+

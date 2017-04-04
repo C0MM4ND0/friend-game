@@ -107,16 +107,24 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.post("/newplayer", function(req, res){
 		console.log(req.body);
-		dataops.add(db, "player", req.body, res, function(){
-			res.render("newplayer");
+		dataops.addNewPlayer(db, "player", req.body, res, function(result){
+			res.send(result);
 		});
 	});
 
 
+	app.get("/np", function(req, res){
 
+		var player = {
+			name: "test",
+			capital: "test-town"
+		}
 
-
-
+		dataops.addNewPlayer(db, "player", player, res, function(result){
+			res.send(result);	
+		});
+	    
+	});
 
 	app.get("/ajax", function(req, res){
 	    res.render("ajax");
