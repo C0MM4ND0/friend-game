@@ -61,17 +61,18 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.post("/ajax", function(req, res){
 		console.log("SERVER: request to SAVE data is: " + JSON.stringify(req.body));
+
 	    dataops.add(db, "random", req.body, res, function(){
 	    	res.send(req.body);
 	    });
-	    
+
 	});
 
 
 	app.post("/ajax-2", function(req, res){
 		console.log("SERVER: request to FIND data is: " + JSON.stringify(req.body));	
 
-		if(req.body.item == ""){			// if we send an empty query, let's return everything
+		if(req.body.item.toLowerCase() == "all"){			// if we send an empty query, let's return everything
 			req.body = {};
 		}
 
