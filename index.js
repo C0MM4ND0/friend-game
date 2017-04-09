@@ -85,49 +85,47 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	});
 
 /* ----------------- end AJAX experiments ----------------- */
+	
+	var reg = /^\d+$/;
 
 
-	app.get("/game/:id", function(req, res){
-		
-		console.log("hey!");
-		console.log("Fetching game " + req.params.id);
-
-		// we need to check if a player with this ID exsits. If true, fetch all of that player's info. 
-		// If false, redirect to create new player page
-
-
-		res.send("this is game " + req.params.id);
+	app.get(/^\/game\/(\d+)$/, function(req, res){
+		res.send("this is game " + req.params[0]);
 	});
 
 	app.get("/newplayer", function(req, res){
-		
 		res.render("newplayer");
 	});
 
 
 	app.post("/newplayer", function(req, res){
 		console.log(req.body);
-		dataops.addNewPlayer(db, "player", req.body, res, function(result){
-			res.send(result);
-		});
-	});
-
-
-	app.get("/np", function(req, res){
-
-		var player = {
-			name: "test",
-			capital: "test-town"
+		if((req.body.name).replace(/\s/g, '').length > 0 && (req.body.capital).replace(/\s/g, '').length > 0){			// let's make sure the input name isn't empty
+				dataops.addNewPlayer(db, "player", req.body, res, function(result){
+				res.redirect("/allplayers");
+			});
+		} else {
+			res.send("cannot save player with no name or capital");
 		}
-
-		dataops.addNewPlayer(db, "player", player, res, function(result){
-			res.send(result);	
-		});
-	    
+		
 	});
+
+
 
 	app.get("/ajax", function(req, res){
 	    res.render("ajax");
+	});
+
+	app.get("/allplayers", function(req, res){
+	    dataops.find(db, "player", req.body, res, function(result){
+	    	res.render("allplayers", { 'players': result });
+	    });
+	});
+
+	app.delete("/allplayers", function(req, res){
+		dataops.deletePlayer(db, "player", req.body, res, function(result){
+			res.send(result);
+		});
 	});
 
 	app.use(function(req, res) {

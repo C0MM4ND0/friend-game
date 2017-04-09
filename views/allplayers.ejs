@@ -1,0 +1,13 @@
+<% include partials/_header.ejs %>
+
+
+<h1>All players:</h1>
+
+
+<% players.forEach(function(p){ %>
+    
+     <p class = "player-info"><strong><span class = "pl-name"><%= p.name %></span></strong>: <%= p.capital %></p>
+    
+<% }) %>
+
+<% include partials/_footer.ejs %>

@@ -25,10 +25,9 @@ function find(db, col, obj, res, callback){
 
 }
 
-
 function addNewPlayer(db, col, player, res, callback){
 	
-	db.collection(col).count(player, function checkIfExists(err, result){
+	db.collection(col).count({"name": player.name}, function checkIfExists(err, result){
 		if (err){
 			console.log("MAYDAY! MAYDAY! Crashing.");
 			return console.log(err);
@@ -50,8 +49,33 @@ function addNewPlayer(db, col, player, res, callback){
 		}
 		
 	});
+}
 
+function deletePlayer(db, col, player, res, callback){
+	
+	db.collection(col).count({"name": player.name}, function checkIfExists(err, result){
+		if (err){
+			console.log("MAYDAY! MAYDAY! Crashing.");
+			return console.log(err);
+		}
 
+		console.log("players in the database: " + JSON.stringify(result));
+
+		if (result < 1){
+			console.log("no such player exists");
+			callback("no such player exists");
+		} else {
+			console.log("deleting player");
+			db.collection(col).remove({name: player.name}, function removePlayer(err, result) {
+				if (err){
+					console.log("MAYDAY! MAYDAY! Crashing.");
+					return console.log(err);
+				}
+				callback(player.name + " successfully deleted");
+			});
+		}
+		
+	});
 }
 
 
@@ -59,6 +83,7 @@ function addNewPlayer(db, col, player, res, callback){
 module.exports.add = add;
 module.exports.find = find;
 module.exports.addNewPlayer = addNewPlayer;
+module.exports.deletePlayer = deletePlayer;
 
 
 
