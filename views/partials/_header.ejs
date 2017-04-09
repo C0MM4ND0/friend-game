@@ -1,14 +1,28 @@
 <HTML>
 <head>
     <title>Friend game</title>
-    <link rel = "stylesheet" type = "text/css" href = "assets/style.css"/>
+    <link rel = "stylesheet" type = "text/css" href = "/assets/style.css"/>
 </head>
 <body>
 
 <div class = "links">
-    <ul>
-        <li><a href= "/newplayer">New Player</a></li>
-        <li><a href= "/allplayers">All Players</a></li>
-    </ul>
+
+    <a href= "/newplayer">New Player</a>
+    <a href= "/allplayers">All Players</a>
+    
 </div>
+
+<span class = "error">
+    <% if(typeof(error) != "undefined"){ %>
+        <%= error %>
+    <% }%>
+</span>
+
+<span class = "message">
+    <% if(typeof(message) != "undefined"){ %>
+        <%= message %>
+    <% }%>
+</span>
+
+<hr>
    

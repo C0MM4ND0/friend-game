@@ -5,3 +5,11 @@
 .query {
     font-weight: bold;
 }
+
+.links a{
+    display: inline;
+}
+
+.error {
+    color: red;
+}

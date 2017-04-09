@@ -3,9 +3,9 @@ const http = require("http");
 const fs = require("fs");                               // file system
 const path = require("path");                           // access paths
 const express = require("express");                     // express
-const MongoClient = require('mongodb').MongoClient      // talk to mongo
-const bodyParser = require('body-parser')               // parse request body
-// const cookieParser = require('cookie-parser');        // allows us to read cookies
+const MongoClient = require('mongodb').MongoClient;     // talk to mongo
+const bodyParser = require('body-parser');              // parse request body
+var session = require('express-sessions');				// create sessions
 var db;													// placeholder for our database - not sure why yet
 
 const app = express();
@@ -49,6 +49,11 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.use(bodyParser.json()); 						// for parsing application/json
 
+
+/*	app.use(session({
+	  secret: 'awfulPassword'
+	}));*/
+
 	app.get("/", function(req, res){
 	    res.render("index");
 	});
@@ -88,9 +93,21 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	
 	var reg = /^\d+$/;
 
-
-	app.get(/^\/game\/(\d+)$/, function(req, res){
-		res.send("this is game " + req.params[0]);
+	// load a game
+	app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){
+		if(req.session.user){
+			console.log("this is game " + req.params[0] + ", player " + req.params[1]);
+			dataops.find(db, "player", {name: req.params[1]}, res, function displayPlayer(result){
+				console.log(result.length);
+				if(result.length > 0){
+					res.render("game", {player: result});
+				} else {
+					res.send("that's not a real player");
+				}
+			});
+		} else {
+			res.redirect("/login");
+		}
 	});
 
 	app.get("/newplayer", function(req, res){
@@ -107,6 +124,26 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		} else {
 			res.send("cannot save player with no name or capital");
 		}
+		
+	});
+
+	app.get("/login", function(req, res){
+		res.render("login");
+	});
+
+	app.post("/login", function(req, res){
+		console.log(req.body);
+		if((req.body.name).replace(/\s/g, '').length >0){
+			dataops.find(db, "player", {name: req.body.name}, res, function displayPlayer(result){
+				if(result.length > 0){
+					req.session.user = result;
+					res.render("game", {player: result});
+				} else {
+					res.render("login", {error: "incorrect login"});
+				}
+			});
+		}
+
 		
 	});
 
