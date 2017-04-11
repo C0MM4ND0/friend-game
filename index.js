@@ -5,7 +5,7 @@ const path = require("path");                           // access paths
 const express = require("express");                     // express
 const MongoClient = require('mongodb').MongoClient;     // talk to mongo
 const bodyParser = require('body-parser');              // parse request body
-var session = require('express-sessions');				// create sessions
+var session = require('express-session')				// create sessions
 var db;													// placeholder for our database - not sure why yet
 
 const app = express();
@@ -38,10 +38,9 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.use(function(req, res, next){                  							// logs request URL
 	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);
+	    console.log("Session is: " + req.session);
 	    next();
 	});
-
-
 	
 	app.use(bodyParser.urlencoded({
 	    extended: true
@@ -50,12 +49,21 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	app.use(bodyParser.json()); 						// for parsing application/json
 
 
-/*	app.use(session({
-	  secret: 'awfulPassword'
-	}));*/
+	app.use(session({
+	  secret: 'awfulPassword',
+	  resave: false,
+	  saveUninitialized: true,
+	  cookie: { secure: true }
+	}));
+
+	/*app.use(function(req, res, next) {
+	  res.locals.user = req.session.user;
+	  next();
+	});*/
+
 
 	app.get("/", function(req, res){
-	    res.render("index");
+	    res.render("index", {session: req.session});
 	});
 
 
@@ -128,7 +136,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	});
 
 	app.get("/login", function(req, res){
-		res.render("login");
+		res.render("login", {session: req.session});
 	});
 
 	app.post("/login", function(req, res){
@@ -136,9 +144,11 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		if((req.body.name).replace(/\s/g, '').length >0){
 			dataops.find(db, "player", {name: req.body.name}, res, function displayPlayer(result){
 				if(result.length > 0){
-					req.session.user = result;
-					res.render("game", {player: result});
+					req.session.user = result[0];
+					app.locals.user = result[0];
+					res.render("game", {player: result, session: req.session});
 				} else {
+					req.session.user = null;
 					res.render("login", {error: "incorrect login"});
 				}
 			});
@@ -146,6 +156,12 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 		
 	});
+
+	app.get("/logout", function(req, res){
+		req.session.user = null;
+		app.locals.user = null;
+		res.render("", {session: ""});
+	})
 
 
 
