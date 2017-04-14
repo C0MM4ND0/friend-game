@@ -145,6 +145,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			dataops.find(db, "player", {name: req.body.name}, res, function displayPlayer(result){
 				if(result.length > 0){
 					req.session.user = result[0];
+					console.log("sessing a session.user! Here it is: " + req.session.user.name)
 					app.locals.user = result[0];
 					res.render("game", {player: result, session: req.session});
 				} else {
@@ -153,8 +154,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				}
 			});
 		}
-
-		
+	
 	});
 
 	app.get("/logout", function(req, res){

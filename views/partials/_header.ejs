@@ -7,13 +7,17 @@
 
 <div class = "links">
 
-    <% if (typeof(user) != "undefined"){ %>
+    <% if (user != null){ %>
 
         <p>Hello, <%= user.name %></p>
         <a href = "/logout">Log Out</a>
     <% } %>
 
-    <a href= "/login">Log In</a>
+    <% if (user == null){ %>
+        <a href= "/login">Log In</a>
+    <% } %>
+
+    
     <a href= "/newplayer">New Player</a>
     <a href= "/allplayers">All Players</a>
     
