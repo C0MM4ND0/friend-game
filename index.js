@@ -152,8 +152,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				if(result.length > 0){
 					console.log("SETTING COOKIE!");
 					req.session.user = result[0].name;
-					req.session.expires = new Date(Date.now() + 10000);
-					req.session.cookie.maxAge = 10000;				// this is what makes the cookie expire
+					req.session.expires = new Date(Date.now() + 10000);		// this helps the session keep track of the expire date
+					req.session.cookie.maxAge = 10000;						// this is what makes the cookie expire
 					console.log("The cookie set is: ");
 					console.log(req.session.cookie);
 					res.redirect("/");
@@ -167,13 +167,15 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	});
 
 	app.get("/time-to-logout", function(req, res){
+		console.log("req.session.expires:");
+		console.log(req.session.expires);
 		res.send(req.session.expires);
 	});
 
 	app.get("/logout", function(req, res){
 		req.session.user = null;
-		app.locals.user = null;
-		res.render("", {session: "", error: "Logged out"});
+		req.session.expires = new Date(Date.now);		/* not sure if this is needed*/
+		res.render("/", {session: req.session, error: "Logged out"});
 	})
 
 
