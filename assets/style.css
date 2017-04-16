@@ -1,9 +1,26 @@
+.alert {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    max-width: 20%;
+
+}
+
+
 .result{
+    color: blue;
+}
+
+.message{
     color: blue;
 }
 
 .query {
     font-weight: bold;
+}
+
+.welcome{
+    display: inline;
 }
 
 .links a{

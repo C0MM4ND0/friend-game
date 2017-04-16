@@ -6,7 +6,9 @@ const express = require("express");                     // express
 const MongoClient = require('mongodb').MongoClient;     // talk to mongo
 const bodyParser = require('body-parser');              // parse request body
 var session = require('express-session')				// create sessions
-var db;													// placeholder for our database - not sure why yet
+var db;													// placeholder for our database
+var sess;												// placeholder for our session
+
 
 const app = express();
 app.set("port", process.env.PORT || 3000)				// we're gonna start a server on whatever the environment port is or on 3000
@@ -34,13 +36,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 /* */
-	
 
-	app.use(function(req, res, next){                  							// logs request URL
-	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);
-	    console.log("Session is: " + req.session);
-	    next();
-	});
 	
 	app.use(bodyParser.urlencoded({
 	    extended: true
@@ -50,11 +46,21 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 	app.use(session({
-	  secret: 'awfulPassword',
-	  resave: false,
-	  saveUninitialized: true,
-	  cookie: { secure: true }
+		secret: 'awfulPassword',
+	 	saveUninitialized: false,
+	 	resave: false,
+	 	secure: false,
+	 	cookie: {}
 	}));
+
+	app.use(function(req, res, next){                  							// logs request URL
+	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);
+	    console.log("Session is: ");
+	    console.log(req.session);
+	    //console.log("cookie is:");
+		//console.log(req.session.cookie);
+	    next();
+	});
 
 	/*app.use(function(req, res, next) {
 	  res.locals.user = req.session.user;
@@ -119,7 +125,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	});
 
 	app.get("/newplayer", function(req, res){
-		res.render("newplayer");
+		res.render("newplayer", {"session": req.session});
 	});
 
 
@@ -144,10 +150,13 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		if((req.body.name).replace(/\s/g, '').length >0){
 			dataops.find(db, "player", {name: req.body.name}, res, function displayPlayer(result){
 				if(result.length > 0){
-					req.session.user = result[0];
-					console.log("sessing a session.user! Here it is: " + req.session.user.name)
-					app.locals.user = result[0];
-					res.render("game", {player: result, session: req.session});
+					console.log("SETTING COOKIE!");
+					req.session.user = result[0].name;
+					req.session.expires = new Date(Date.now() + 10000);
+					req.session.cookie.maxAge = 10000;				// this is what makes the cookie expire
+					console.log("The cookie set is: ");
+					console.log(req.session.cookie);
+					res.redirect("/");
 				} else {
 					req.session.user = null;
 					res.render("login", {error: "incorrect login"});
@@ -157,10 +166,14 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	
 	});
 
+	app.get("/time-to-logout", function(req, res){
+		res.send(req.session.expires);
+	});
+
 	app.get("/logout", function(req, res){
 		req.session.user = null;
 		app.locals.user = null;
-		res.render("", {session: ""});
+		res.render("", {session: "", error: "Logged out"});
 	})
 
 
@@ -171,7 +184,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.get("/allplayers", function(req, res){
 	    dataops.find(db, "player", req.body, res, function(result){
-	    	res.render("allplayers", { 'players': result });
+	    	res.render("allplayers", { "players": result, "session": req.session });
 	    });
 	});
 

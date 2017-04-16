@@ -7,12 +7,28 @@
 
 <div class = "links">
 
-    <% if (typeof(user) != "undefined" && user != null){ %>
-        <p>Hello, <%= user.name %></p>
+<div class = "alert">
+
+    <span class = "error">
+        <% if(typeof(error) != "undefined"){ %>
+            <%= error %>
+        <% }%>
+    </span>
+
+    <span class = "message">
+        <% if(typeof(message) != "undefined"){ %>
+            <%= message %>
+        <% }%>
+    </span>
+
+</div>
+
+    <% if (typeof(session.user) != "undefined" && session.user != null){ %>
+        <p class = "welcome">Hello, <%= session.user %></p>
         <a href = "/logout">Log Out</a>
     <% } %>
 
-    <% if (typeof(user) == "undefined" || user == null){ %>
+    <% if (typeof(session.user) == "undefined" || session.user == null){ %>
         <a href= "/login">Log In</a>
     <% } %>
 
@@ -22,17 +38,7 @@
     
 </div>
 
-<span class = "error">
-    <% if(typeof(error) != "undefined"){ %>
-        <%= error %>
-    <% }%>
-</span>
 
-<span class = "message">
-    <% if(typeof(message) != "undefined"){ %>
-        <%= message %>
-    <% }%>
-</span>
 
 <hr>
    

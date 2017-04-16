@@ -1,6 +1,5 @@
 $(document).ready(main);
 
-
 function main(){
 
     var counter = 1;
@@ -101,8 +100,7 @@ function main(){
             alert("You saved a life today, you champ.");
         }
     });
-
-      
+  
 
 }
 
