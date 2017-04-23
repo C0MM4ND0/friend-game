@@ -57,16 +57,17 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);
 	    console.log("Session is: ");
 	    console.log(req.session);
-	    //console.log("cookie is:");
-		//console.log(req.session.cookie);
 	    next();
 	});
 
-	/*app.use(function(req, res, next) {
-	  res.locals.user = req.session.user;
-	  next();
-	});*/
+/* ----------------- explore further ---------------------- */
 
+/*	app.use(function(req, res, next) {											// makes messages available to views
+	 	res.locals.messages = req.session.messages;
+	 	next();
+	})*/
+
+/* ----------------- -------------- ---------------------- */
 
 	app.get("/", function(req, res){
 	    res.render("index", {session: req.session});
@@ -162,6 +163,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 					res.render("login", {error: "incorrect login"});
 				}
 			});
+		} else {
+			res.render("login", {error: "blank username"});
 		}
 	
 	});
@@ -175,7 +178,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	app.get("/logout", function(req, res){
 		req.session.user = null;
 		req.session.expires = new Date(Date.now);		/* not sure if this is needed*/
-		res.render("/", {session: req.session, error: "Logged out"});
+		res.render("index", {session: req.session, error: "Logged out"});
 	})
 
 
