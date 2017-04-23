@@ -23,11 +23,6 @@
 
 </div>
 
-    <% if (typeof(session.user) != "undefined" && session.user != null){ %>
-        <p class = "welcome">Hello, <%= session.user %></p>
-        <a href = "/logout">Log Out</a>
-    <% } %>
-
     <% if (typeof(session.user) == "undefined" || session.user == null){ %>
         <a href= "/login">Log In</a>
     <% } %>
