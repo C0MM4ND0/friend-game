@@ -7,14 +7,24 @@ function main(){
     var secCounter;
 
 
+
     $.ajax({
         type: "get",
         action: "get",
         url: "/time-to-logout",
-        success: function(result){                      // when logged out, force screen refresh
+        success: function(result){                      
             exp = new Date(result);
             timeLeft = Math.floor((exp - Date.now())/1000);
+            var status;
+            if(isNaN(timeLeft)){
+                status = "Logged out";
+            } else {
+                status = Math.ceil(timeLeft/60/60) + " hours";
+            }
+
+            $("#time-left").text(status);
             secCounter = timeLeft;
+            
         }
     })
 
@@ -26,11 +36,11 @@ function main(){
             clearInterval(timer);
             if($("#time-left").text() != "Logged out"){
                 console.log("reloading!");
-                window.location.reload();
+                window.location.reload();                                   // when logged out, force screen refresh
             } 
         } else {
-            $("#time-left").text(secCounter);               // update counter on the page
-            secCounter--;                                   // count down one second
+            $("#time-left").text(Math.ceil(secCounter/60/60) + " hours");               // update counter on the page
+            secCounter--;                                                               // count down one second
         }
 
     }, 1000)

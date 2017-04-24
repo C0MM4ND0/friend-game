@@ -6,7 +6,6 @@
 
 }
 
-
 .result{
     color: blue;
 }
@@ -29,4 +28,12 @@
 
 .error {
     color: red;
+}
+
+.navigation{
+    float: left;
+} 
+.account{
+
+    float: right;
 }

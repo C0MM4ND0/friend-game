@@ -7,8 +7,6 @@ const MongoClient = require('mongodb').MongoClient;     // talk to mongo
 const bodyParser = require('body-parser');              // parse request body
 var session = require('express-session')				// create sessions
 var db;													// placeholder for our database
-var sess;												// placeholder for our session
-
 
 const app = express();
 app.set("port", process.env.PORT || 3000)				// we're gonna start a server on whatever the environment port is or on 3000
@@ -149,8 +147,11 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				if(result.length > 0){
 					console.log("SETTING COOKIE!");
 					req.session.user = result[0].name;
-					req.session.expires = new Date(Date.now() + 10000);		// this helps the session keep track of the expire date
-					req.session.cookie.maxAge = 10000;						// this is what makes the cookie expire
+
+					var day = 60000*60*24;
+
+					req.session.expires = new Date(Date.now() + (30*day));		// this helps the session keep track of the expire date
+					req.session.cookie.maxAge = (30*day);							// this is what makes the cookie expire
 					console.log("The cookie set is: ");
 					console.log(req.session.cookie);
 					res.redirect("/");

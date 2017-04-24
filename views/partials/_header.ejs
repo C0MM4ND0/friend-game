@@ -7,33 +7,40 @@
 
 <div class = "links">
 
-<div class = "alert">
+    <div class = "alert">
 
-    <span class = "error">
-        <% if(typeof(error) != "undefined"){ %>
-            <%= error %>
-        <% }%>
-    </span>
+        <span class = "error">
+            <% if(typeof(error) != "undefined"){ %>
+                <%= error %>
+            <% }%>
+        </span>
 
-    <span class = "message">
-        <% if(typeof(message) != "undefined"){ %>
-            <%= message %>
-        <% }%>
-    </span>
+        <span class = "message">
+            <% if(typeof(message) != "undefined"){ %>
+                <%= message %>
+            <% }%>
+        </span>
 
+    </div>
+
+    <div class = "navigation">
+        <a href= "/">Home</a>
+        <a href= "/newplayer">New Player</a>
+        <a href= "/allplayers">All Players</a>
+    </div>
+
+    <div class = "account">
+        <% if (typeof(session.user) == "undefined" || session.user == null){ %>
+                <a href= "/login">Log In</a>
+        <% } else if (typeof(session.user) != "undefined" && session.user != null){ %>
+            <p class = "welcome">Hello, <%= session.user %></p>
+            <a href = "/logout">Log Out</a>
+        <% } %>
+    </div>
 </div>
 
-    <% if (typeof(session.user) == "undefined" || session.user == null){ %>
-        <a href= "/login">Log In</a>
-    <% } %>
 
-    
-    <a href= "/newplayer">New Player</a>
-    <a href= "/allplayers">All Players</a>
-    
-</div>
+<br>
 
 
-
-<hr>
    
