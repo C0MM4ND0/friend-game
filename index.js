@@ -60,8 +60,10 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.use(function(req, res, next) {											// makes session available to all views
 	 	app.locals.session = req.session;
-	 	req.session.message = null;
+	 	app.locals.error = req.session.error;									// making copies like this is clunky, but it works
+	 	app.locals.message = req.session.message;
 	 	req.session.error = null;
+	 	req.session.message = null;
 	 	next();
 	})
 
@@ -155,7 +157,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 					var day = 60000*60*24;
 
-					req.session.expires = new Date(Date.now() + (30*day));		// this helps the session keep track of the expire date
+					req.session.expires = new Date(Date.now() + (30*day));			// this helps the session keep track of the expire date
 					req.session.cookie.maxAge = (30*day);							// this is what makes the cookie expire
 					console.log("The cookie set is: ");
 					console.log(req.session.cookie);
@@ -169,6 +171,12 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			res.render("login", {error: "blank username"});
 		}
 	
+	});
+
+	app.get("/nope", function(req, res){
+		req.session.message = "redirect message";
+		req.session.error = "redirect error";
+		res.redirect("/");
 	});
 
 	app.get("/time-to-logout", function(req, res){
