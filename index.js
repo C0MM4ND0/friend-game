@@ -134,6 +134,22 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	app.post("/newplayer", function(req, res){
 		console.log(req.body);
 		if((req.body.name).replace(/\s/g, '').length > 0 && (req.body.capital).replace(/\s/g, '').length > 0){			// let's make sure the input name isn't empty
+				
+				req.body.hp = 100;
+				req.body.strength = 10;
+				req.body.walls = "wood";
+
+				req.body.stats = {
+					hp: 100,
+					strength: 10,
+					walls: "wood",
+					footmen: 10,
+					ft_lvl: 1,
+					archers: 5,
+					ar_lvl: 1,
+					scout: 1
+				}
+
 				dataops.addNewPlayer(db, "player", req.body, res, function(result){
 				res.redirect("/allplayers");
 			});
@@ -161,7 +177,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 					req.session.cookie.maxAge = (30*day);							// this is what makes the cookie expire
 					console.log("The cookie set is: ");
 					console.log(req.session.cookie);
-					res.redirect("/");
+					res.redirect("/game");
 				} else {
 					req.session.user = null;
 					res.render("login", {error: "incorrect login"});
@@ -173,11 +189,6 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	
 	});
 
-	app.get("/nope", function(req, res){
-		req.session.message = "redirect message";
-		req.session.error = "redirect error";
-		res.redirect("/");
-	});
 
 	app.get("/time-to-logout", function(req, res){
 		console.log("req.session.expires:");
@@ -190,7 +201,6 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		req.session.expires = new Date(Date.now);		/* not sure if this is needed*/
 		res.render("index", {error: "Logged out"});
 	})
-
 
 
 	app.get("/ajax", function(req, res){
@@ -209,9 +219,37 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		});
 	});
 
+
+
+
+	/* game actions */
+
+
+	app.post("/game", function(req, res){
+		console.log("req.body:");
+		console.log(req.body);
+
+		if(req.body.action == "scout"){
+			res.send("off we go.");
+		}
+
+		if(req.body.action == "build"){
+			res.send("let me get the bricks.");
+		}
+
+
+	});
+
+
+
+
+
+	/* 404 */
+
 	app.use(function(req, res) {
 	    res.status(404);
-	    res.send("404 - page not found!");
+	    req.session.error = "404 - page not found!";
+	    res.redirect("/");
 	});
 
 	app.listen(app.get("port"), function() {
