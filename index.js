@@ -60,6 +60,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.use(function(req, res, next) {											// makes session available to all views
 	 	app.locals.session = req.session;
+	 	req.session.message = null;
+	 	req.session.error = null;
 	 	next();
 	})
 
@@ -100,24 +102,27 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 /* ----------------- end AJAX experiments ----------------- */
 	
-	var reg = /^\d+$/;
+	var reg = /^\d+$/;				// not sure why i need this...
 
 	// load a game
-	app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){
-		if(req.session.user){
+	app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){					// this matches /game/#/username
+		
+		if(req.session.user == req.params[1]){								// only let the player see this page if they're the player
 			console.log("this is game " + req.params[0] + ", player " + req.params[1]);
 			dataops.find(db, "player", {name: req.params[1]}, res, function displayPlayer(result){
 				console.log(result.length);
-				if(result.length > 0){
-					res.render("game", {player: result});
-				} else {
-					res.send("that's not a real player");
-				}
+				res.render("game", {player: result});
 			});
 		} else {
+			req.session.message = "You need to log in";
 			res.redirect("/login");
 		}
 	});
+
+	app.get("/game", function(req, res){
+		var url = "/game/" + 1 + "/" + req.session.user
+		res.redirect(url);
+	})
 
 	app.get("/newplayer", function(req, res){
 		res.render("newplayer", {"session": req.session});

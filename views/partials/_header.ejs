@@ -16,8 +16,20 @@
         </span>
 
         <span class = "message">
+            <% if(typeof(session.error) != "undefined"){ %>
+                <%= session.error %>
+            <% }%>
+        </span>
+
+        <span class = "message">
             <% if(typeof(message) != "undefined"){ %>
                 <%= message %>
+            <% }%>
+        </span>
+
+        <span class = "message">
+            <% if(typeof(session.message) != "undefined"){ %>
+                <%= session.message %>
             <% }%>
         </span>
 
@@ -34,6 +46,7 @@
                 <a href= "/login">Log In</a>
         <% } else if (typeof(session.user) != "undefined" && session.user != null){ %>
             <p class = "welcome">Hello, <%= session.user %></p>
+            <a href = "/game">Game</a>
             <a href = "/logout">Log Out</a>
         <% } %>
     </div>
