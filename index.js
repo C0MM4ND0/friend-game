@@ -52,9 +52,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	}));
 
 	app.use(function(req, res, next){                  							// logs request URL
-	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);
-	    console.log("Session is: ");
-	    console.log(req.session);
+	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);	
 	    next();
 	});
 
@@ -109,7 +107,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	// load a game
 	app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){					// this matches /game/#/username
 		
-		if(req.session.user == req.params[1]){								// only let the player see this page if they're the player
+		if(req.session.user && req.session.user.name == req.params[1]){								// only let the player see this page if they're the player
 			console.log("this is game " + req.params[0] + ", player " + req.params[1]);
 			dataops.find(db, "player", {name: req.params[1]}, res, function displayPlayer(result){
 				console.log(result.length);
@@ -122,7 +120,13 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	});
 
 	app.get("/game", function(req, res){
-		var url = "/game/" + 1 + "/" + req.session.user
+		var url;
+		if(req.session.user){
+			url = "/game/" + 1 + "/" + req.session.user.name
+		} else {
+			url = "/login"
+			req.session.message = "You need to log in";	
+		}
 		res.redirect(url);
 	})
 
@@ -135,10 +139,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		console.log(req.body);
 		if((req.body.name).replace(/\s/g, '').length > 0 && (req.body.capital).replace(/\s/g, '').length > 0){			// let's make sure the input name isn't empty
 				
-				req.body.hp = 100;
-				req.body.strength = 10;
+				
 				req.body.walls = "wood";
-
 				req.body.stats = {
 					hp: 100,
 					strength: 10,
@@ -169,14 +171,14 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			dataops.find(db, "player", {name: req.body.name}, res, function displayPlayer(result){
 				if(result.length > 0){
 					console.log("SETTING COOKIE!");
-					req.session.user = result[0].name;
+					req.session.user = result[0];
 
 					var day = 60000*60*24;
 
 					req.session.expires = new Date(Date.now() + (30*day));			// this helps the session keep track of the expire date
 					req.session.cookie.maxAge = (30*day);							// this is what makes the cookie expire
-					console.log("The cookie set is: ");
-					console.log(req.session.cookie);
+					console.log("Cookie set! ");
+				//	console.log(req.session.cookie);
 					res.redirect("/game");
 				} else {
 					req.session.user = null;
@@ -226,11 +228,24 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 	app.post("/game", function(req, res){
-		console.log("req.body:");
-		console.log(req.body);
+		//console.log("req.body:");
+		//console.log(req.body);
 
 		if(req.body.action == "scout"){
-			res.send("off we go.");
+
+			console.log("got the ajax call...");
+
+			pl = req.session.user;
+			console.log("pl hp is: " + pl.stats.hp);
+			q = { "stats.hp": (pl.stats.hp + 10)};
+
+			dataops.update(db, "player", pl, q, res,  function updateScreen(result){
+				console.log("Done updating");	
+				req.session.user = result[0];
+				res.send(req.session.user);
+			});
+
+			//res.end();
 		}
 
 		if(req.body.action == "build"){

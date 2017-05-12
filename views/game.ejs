@@ -3,7 +3,9 @@
 <p>Player name: <%= player[0].name %></p>
 <p>Player capital:  <%= player[0].capital %></p>
 <p>
-	Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
+	HP:  <span id = "hp"><%= player[0].stats.hp %></span> 
+    <br>
+    Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
 	<br>	
 	Footmen:  <%= player[0].stats.footmen %>, lvl. <%= player[0].stats.ft_lvl %>
 	<br>

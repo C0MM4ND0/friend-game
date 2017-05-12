@@ -7,7 +7,8 @@ function main(){
     $("#scout").click(function(){
 
         action = {
-            action: "scout"
+            action: "scout",
+
         }
 
         $.ajax({
@@ -16,7 +17,7 @@ function main(){
             data: action,
             success: function(result){                      
                 console.log("scouted");
-                 
+                $("#hp").text(result.stats.hp);
             }
         })
     });

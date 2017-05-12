@@ -34,7 +34,7 @@
         <% if (typeof(session.user) == "undefined" || session.user == null){ %>
                 <a href= "/login">Log In</a>
         <% } else if (typeof(session.user) != "undefined" && session.user != null){ %>
-            <p class = "welcome">Hello, <%= session.user %></p>
+            <p class = "welcome">Hello, <%= session.user.name %></p>
             <a href = "/game">Game</a>
             <a href = "/logout">Log Out</a>
         <% } %>
