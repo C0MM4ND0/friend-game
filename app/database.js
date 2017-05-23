@@ -78,29 +78,28 @@ function deletePlayer(db, col, player, res, callback){
 	});
 }
 
-function update(db, col, item, query, res, callback){
+function update(db, col, item, query, res, isArray, array, callback){
 	console.log("starting update in DB...");
 	console.log("item is: ");
 	console.log(item);
 	console.log("query is: ");
 	console.log(query);
-	db.collection(col).update({"name": item.name}, {$set: query}, function displayAfterUpdating(){
-		console.log("Updated successfully! New player stats: ");
-		find(db, col, {"name": item.name}, res, callback);
-	});
+	console.log("array is is: ");
+	console.log(array);
 
-
-/*
-	, function(err, result){
-	db.player.update(a ,{$set: {"stats.hp": a.stats.hp+10} })
-		if(err){
-			console.log("MAYDAY! MAYDAY! Crashing.");
-			return console.log(err);
-		}
-		console.log("db - successfully updated item!");
-		callback("successfully updated!");
-	});*/
+	if(isArray){
+		db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
+			console.log("Updated successfully! New player stats: ");
+			find(db, col, {"name": item.name}, res, callback);
+		});
+	} else {
+		db.collection(col).update(item, {$set: query}, function displayAfterUpdating(){
+			console.log("Updated successfully! New player stats: ");
+			find(db, col, {"name": item.name}, res, callback);
+		});
+	}
 }
+
 
 
 

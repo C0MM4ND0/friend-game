@@ -1,22 +1,58 @@
 <% include partials/_header.ejs %>
 
-<p>Player name: <%= player[0].name %></p>
-<p>Player capital:  <%= player[0].capital %></p>
-<p>
-	HP:  <span id = "hp"><%= player[0].stats.hp %></span> 
-    <br>
-    Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
-	<br>	
-	Footmen:  <%= player[0].stats.footmen %>, lvl. <%= player[0].stats.ft_lvl %>
-	<br>
-	Archers:  <%= player[0].stats.archers %>, lvl. <%= player[0].stats.ar_lvl %>
-</p>
-<p></p>
+<div class = "row">
+    <div class = "col-md-8">
 
-<button id = "scout">Scout</button>
-<button id = "build">Build</button>
+        <p>Player name: <%= player[0].name %></p>
+        <p>Player capital:  <%= player[0].capital %></p>
+        <p>
+        	HP:  <span id = "hp"><%= player[0].stats.hp %></span> 
+            <br>
+            Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
+        	<br>	
+        	Footmen:  <%= player[0].units.footmen %>, lvl. <%= player[0].units.ft_lvl %>
+        	<br>
+        	Archers:  <%= player[0].units.archers %>, lvl. <%= player[0].units.ar_lvl %>
+        </p>
+        <p></p>
+
+        <button id = "scout" >Scout</button>
+        <button id = "build">Build</button>
+
+        <br>
+        <br>
+
+        <p>Actions against you:</p>
+
+        <% player[0].actions.forEach(function(action){ %>
+            <%= JSON.stringify(action) %>
+            <br>
+        <% }) %>
+    </div>
 
 
+    <div class = "col-md-4">
+        <div class = "row bold">
+                    <div class = "col-md-4">Name:</div>
+                    <div class = "col-md-4">HP:</div>
+                    <div class = "col-md-4">Action:</div>
+                </div>
+        <% opponents.forEach(function(opponent){ %>
+            <% if(opponent.name != player[0].name){ %>
+                <div class = "row <%= opponent.name %> ">
+                    <div class = "col-md-4"><%= opponent.name %>:</div>
+                    <div class = "col-md-4" ><%= opponent.stats.hp %></div>
+                    <div class = "col-md-4">
+                        <button class = "action" data-action = "attack" data-name = <%= opponent.name %>>Attack</button><button class = "action" data-action = "spy" data-name = <%= opponent.name %>>Spy</button>
+                    </div>
+                </div>
+                <br>
+                <% } %>
+        <% }) %>
+    </div>
+</div>
+
+<br>
 
 
 

@@ -109,9 +109,11 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		
 		if(req.session.user && req.session.user.name == req.params[1]){								// only let the player see this page if they're the player
 			console.log("this is game " + req.params[0] + ", player " + req.params[1]);
-			dataops.find(db, "player", {name: req.params[1]}, res, function displayPlayer(result){
-				console.log(result.length);
-				res.render("game", {player: result});
+			dataops.find(db, "player", req.body, res, function(all_players){	// get all the players		    
+			    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
+		    		return el._id == req.session.user._id;
+		    	})
+		    	res.render("game", {player: current_player, opponents: all_players});	
 			});
 		} else {
 			req.session.message = "You need to log in";
@@ -139,20 +141,26 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		console.log(req.body);
 		if((req.body.name).replace(/\s/g, '').length > 0 && (req.body.capital).replace(/\s/g, '').length > 0){			// let's make sure the input name isn't empty
 				
-				
-				req.body.walls = "wood";
-				req.body.stats = {
-					hp: 100,
-					strength: 10,
+				var new_player = {
+					name: req.body.name,
+					capital: req.body.capital,
 					walls: "wood",
-					footmen: 10,
-					ft_lvl: 1,
-					archers: 5,
-					ar_lvl: 1,
-					scout: 1
+					stats: {
+						hp: 100,
+						strength: 10,
+						walls: "wood",
+					},
+					units: {
+						footmen: 10,
+						ft_lvl: 1,
+						archers: 5,
+						ar_lvl: 1,
+						scout: 1
+					},
+					actions: []
 				}
 
-				dataops.addNewPlayer(db, "player", req.body, res, function(result){
+				dataops.addNewPlayer(db, "player", new_player, res, function(result){
 				res.redirect("/allplayers");
 			});
 		} else {
@@ -228,18 +236,20 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 	app.post("/game", function(req, res){
-		//console.log("req.body:");
-		//console.log(req.body);
+		// console.log("req.body:");
+		// console.log(req.body);
 
 		if(req.body.action == "scout"){
 
 			console.log("got the ajax call...");
 
-			pl = req.session.user;
-			console.log("pl hp is: " + pl.stats.hp);
-			q = { "stats.hp": (pl.stats.hp + 10)};
+			var pl = {
+				"name": req.session.user.name
+			}
+			console.log("pl hp is: " + req.session.user.stats.hp);
+			var q = { "stats.hp": (req.session.user.stats.hp + 10)};
 
-			dataops.update(db, "player", pl, q, res,  function updateScreen(result){
+			dataops.update(db, "player", pl, q, res, false, null, function updateScreen(result){
 				console.log("Done updating");	
 				req.session.user = result[0];
 				res.send(req.session.user);
@@ -250,6 +260,30 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 		if(req.body.action == "build"){
 			res.send("let me get the bricks.");
+		}
+
+
+		if(req.body.action == "attack"){
+			console.log("back end: received attack");
+			
+			// pull the player's data:
+
+			var now = new Date();
+			var targetPlayer = {
+				name: req.body.player
+			}; 
+			var action = {
+				date: now,
+				action: "attack",
+				weight: req.session.user.stats.strength
+			};
+
+			 dataops.update(db, "player", targetPlayer, action, res, true, "actions", function(targetPlayer){
+		    	console.log("Target player: ");
+		    	console.log(targetPlayer);
+		    	res.send("Server: viciously attacked " + req.body.player);
+		    });
+			
 		}
 
 

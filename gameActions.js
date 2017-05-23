@@ -8,7 +8,6 @@ function main(){
 
         action = {
             action: "scout",
-
         }
 
         $.ajax({
@@ -16,7 +15,7 @@ function main(){
             url: "/game",
             data: action,
             success: function(result){                      
-                console.log("scouted");
+                console.log("scouted. HP is now " + result.stats.hp);
                 $("#hp").text(result.stats.hp);
             }
         })
@@ -40,7 +39,25 @@ function main(){
     });
     
 
-    
+    $(".action").click(function(){
+        console.log("front end: attacking!");
+        var name = $(this).attr("data-name");
+        var move = $(this).attr("data-action");
 
+        action = {
+            action: move,
+            player: name
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/game",
+            data: action,
+            success: function(result){
+                console.log(result);
+
+            }
+        })
+    });
 
 }

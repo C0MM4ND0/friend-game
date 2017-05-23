@@ -76,9 +76,10 @@ function main(){
 
     // delete on click
 
-    $(".pl-name").click(function(e){
+    $(".pl-name").click(function(){
 
-        var player = $(e.target).text();
+        var player = $(this).attr("id");
+
         console.log("you clicked on a player named: " + player);
 
         if(confirm("Are you sure you want to delete " + player + " from the database?")){
@@ -93,14 +94,13 @@ function main(){
                 data: playerToDelete,
                 success: function(result){
                     console.log(result);
-                    $(e.target).closest(".player-info").remove();
+                    $("#" + player).closest(".player-info").remove();
                 }
             })
         } else {
             alert("You saved a life today, you champ.");
         }
     });
-  
 
 }
 
