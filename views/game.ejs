@@ -18,14 +18,19 @@
 
         <button id = "scout" >Scout</button>
         <button id = "build">Build</button>
+        <button id = "block">Block</button>
 
         <br>
         <br>
 
         <p>Actions against you:</p>
-
+        <% var i = 0 %>
         <% player[0].actions.forEach(function(action){ %>
-            <%= JSON.stringify(action) %>
+            
+            <span id = <%= "action-" + i %> >
+                <%= action.username %> took a(n) <%= action.action %> for <%= action.weight%> on <%= Math.round(((Date.now() - action.date)/1000/60)) %> minutes ago
+            </span>
+            <% i++ %>
             <br>
         <% }) %>
     </div>

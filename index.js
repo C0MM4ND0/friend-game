@@ -161,7 +161,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				}
 
 				dataops.addNewPlayer(db, "player", new_player, res, function(result){
-				res.redirect("/allplayers");
+				req.session.message = result;
+				res.redirect("/login");
 			});
 		} else {
 			res.send("cannot save player with no name or capital");
@@ -225,7 +226,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 	app.delete("/allplayers", function(req, res){
 		dataops.deletePlayer(db, "player", req.body, res, function(result){
-			res.send(result);
+		res.send(result);
 		});
 	});
 
@@ -249,7 +250,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			console.log("pl hp is: " + req.session.user.stats.hp);
 			var q = { "stats.hp": (req.session.user.stats.hp + 10)};
 
-			dataops.update(db, "player", pl, q, res, false, null, function updateScreen(result){
+			dataops.update(db, "player", pl, q, res, false, null, null, function updateScreen(result){
 				console.log("Done updating");	
 				req.session.user = result[0];
 				res.send(req.session.user);
@@ -268,17 +269,18 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			
 			// pull the player's data:
 
-			var now = new Date();
+			var dt = Date.now();
 			var targetPlayer = {
 				name: req.body.player
 			}; 
 			var action = {
-				date: now,
 				action: "attack",
+				username: req.session.user.name,
+				date: dt,
 				weight: req.session.user.stats.strength
 			};
 
-			 dataops.update(db, "player", targetPlayer, action, res, true, "actions", function(targetPlayer){
+			 dataops.update(db, "player", targetPlayer, action, res, true, "actions", "push", function(targetPlayer){
 		    	console.log("Target player: ");
 		    	console.log(targetPlayer);
 		    	res.send("Server: viciously attacked " + req.body.player);
@@ -286,6 +288,25 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			
 		}
 
+		if(req.body.action == "block"){
+			console.log("back end: received block");
+
+			var targetPlayer = {
+				name: req.body.player
+			}; 
+			var action = {
+				action: "block",
+				username: req.session.user.name,
+				date: dt,
+				weight: req.session.user.stats.strength
+			};
+
+			dataops.update(db, "player", targetPlayer, action, res, true,  "actions", "pull", function(targetPlayer){
+		    	console.log("Target player: ");
+		    	console.log(targetPlayer);
+		    	res.send("Server: viciously attacked " + req.body.player);
+	    	});
+    	}
 
 	});
 

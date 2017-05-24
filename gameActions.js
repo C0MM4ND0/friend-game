@@ -37,6 +37,24 @@ function main(){
             }
         })
     });
+
+    $("#block").click(function(){
+
+        console.log("attempting to block attack");
+
+        action = {
+            action: "block"
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/game",
+            data: action,
+            success: function(result){                      
+                console.log(result); 
+            }
+        })
+    });
     
 
     $(".action").click(function(){
@@ -54,10 +72,14 @@ function main(){
             url: "/game",
             data: action,
             success: function(result){
+
                 console.log(result);
 
             }
         })
     });
 
+
+
 }
+

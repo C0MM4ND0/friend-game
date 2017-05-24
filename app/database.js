@@ -44,7 +44,7 @@ function addNewPlayer(db, col, player, res, callback){
 					console.log("MAYDAY! MAYDAY! Crashing.");
 					return console.log(err);
 				}
-				callback(result.ops[0]);
+				callback("New player successfully created");
 			});
 		}
 		
@@ -78,7 +78,7 @@ function deletePlayer(db, col, player, res, callback){
 	});
 }
 
-function update(db, col, item, query, res, isArray, array, callback){
+function update(db, col, item, query, res, isArray, array, arrayAction, callback){
 	console.log("starting update in DB...");
 	console.log("item is: ");
 	console.log(item);
@@ -88,10 +88,21 @@ function update(db, col, item, query, res, isArray, array, callback){
 	console.log(array);
 
 	if(isArray){
-		db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
-			console.log("Updated successfully! New player stats: ");
-			find(db, col, {"name": item.name}, res, callback);
-		});
+
+		if(arrayAction == "push"){
+			db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))}, $sort: { date: 1 }}, function displayAfterUpdating(){
+				console.log("Updated successfully! New player stats: ");
+				find(db, col, {"name": item.name}, res, callback);
+			});
+		}
+
+		if(arrayAction == "pull"){
+			db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
+				console.log("Updated successfully! New player stats: ");
+				find(db, col, {"name": item.name}, res, callback);
+			});
+		}
+		
 	} else {
 		db.collection(col).update(item, {$set: query}, function displayAfterUpdating(){
 			console.log("Updated successfully! New player stats: ");
@@ -99,6 +110,7 @@ function update(db, col, item, query, res, isArray, array, callback){
 		});
 	}
 }
+
 
 
 
