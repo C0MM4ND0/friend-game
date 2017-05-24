@@ -50,7 +50,9 @@ function main(){
             type: "post",
             url: "/game",
             data: action,
-            success: function(result){                      
+            success: function(result){   
+                $(".attack").text("You've successfully blocked this attack");
+
                 console.log(result); 
             }
         })
@@ -59,6 +61,7 @@ function main(){
 
     $(".action").click(function(){
         console.log("front end: attacking!");
+        var clicked = $(this);
         var name = $(this).attr("data-name");
         var move = $(this).attr("data-action");
 
@@ -72,9 +75,9 @@ function main(){
             url: "/game",
             data: action,
             success: function(result){
-
+                clicked.parents("."+name).find(".action-count").append(" x ");
                 console.log(result);
-
+                
             }
         })
     });

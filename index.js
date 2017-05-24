@@ -105,10 +105,14 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	var reg = /^\d+$/;				// not sure why i need this...
 
 	// load a game
-	app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){					// this matches /game/#/username
+	// app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){					// this matches /game/#/username
 		
-		if(req.session.user && req.session.user.name == req.params[1]){								// only let the player see this page if they're the player
-			console.log("this is game " + req.params[0] + ", player " + req.params[1]);
+	app.get("/game", function(req, res){
+
+		// if(req.session.user && req.session.user.name == req.params[1]){								// only let the player see this page if they're the player
+		//	console.log("this is game " + req.params[0] + ", player " + req.params[1]);
+
+		if(req.session.user){	
 			dataops.find(db, "player", req.body, res, function(all_players){	// get all the players		    
 			    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
 		    		return el._id == req.session.user._id;
@@ -120,7 +124,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			res.redirect("/login");
 		}
 	});
-
+/*
 	app.get("/game", function(req, res){
 		var url;
 		if(req.session.user){
@@ -130,7 +134,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			req.session.message = "You need to log in";	
 		}
 		res.redirect(url);
-	})
+	})*/
 
 	app.get("/newplayer", function(req, res){
 		res.render("newplayer", {"session": req.session});
@@ -291,20 +295,25 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		if(req.body.action == "block"){
 			console.log("back end: received block");
 
-			var targetPlayer = {
-				name: req.body.player
+			var currentPlayer = {
+				name: req.session.user.name
 			}; 
 			var action = {
-				action: "block",
-				username: req.session.user.name,
-				date: dt,
-				weight: req.session.user.stats.strength
+				action: "attack"
 			};
 
-			dataops.update(db, "player", targetPlayer, action, res, true,  "actions", "pull", function(targetPlayer){
-		    	console.log("Target player: ");
-		    	console.log(targetPlayer);
-		    	res.send("Server: viciously attacked " + req.body.player);
+			/* 
+				I need to figure out how to remove the most recent attack. Check out the $sort mongo function
+			*/
+
+
+			dataops.update(db, "player", currentPlayer, action, res, true,  "actions", "pull", function(targetPlayer){
+		    	dataops.find(db, "player", {}, res, function(all_players){	// get all the players		    
+				    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
+			    		return el._id == req.session.user._id;
+			    	})
+			    	res.send("Server: attack blocked!");	
+				});
 	    	});
     	}
 

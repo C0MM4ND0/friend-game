@@ -90,14 +90,16 @@ function update(db, col, item, query, res, isArray, array, arrayAction, callback
 	if(isArray){
 
 		if(arrayAction == "push"){
-			db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))}, $sort: { date: 1 }}, function displayAfterUpdating(){
+			console.log("pushing to actions array");
+			db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
 				console.log("Updated successfully! New player stats: ");
 				find(db, col, {"name": item.name}, res, callback);
 			});
 		}
 
 		if(arrayAction == "pull"){
-			db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
+			console.log("pulling from actions array");
+			db.collection(col).update(item, {$pull: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
 				console.log("Updated successfully! New player stats: ");
 				find(db, col, {"name": item.name}, res, callback);
 			});

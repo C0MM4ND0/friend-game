@@ -27,10 +27,9 @@
         <% var i = 0 %>
         <% player[0].actions.forEach(function(action){ %>
             
-            <span id = <%= "action-" + i %> >
-                <%= action.username %> took a(n) <%= action.action %> for <%= action.weight%> on <%= Math.round(((Date.now() - action.date)/1000/60)) %> minutes ago
+            <span class = <%= action.action %> >
+                <%= action.username %> played a(n) <%= action.action %> for <%= action.weight%> on <%= Math.round(((Date.now() - action.date)/1000/60)) %> minutes ago
             </span>
-            <% i++ %>
             <br>
         <% }) %>
     </div>
@@ -38,15 +37,29 @@
 
     <div class = "col-md-4">
         <div class = "row bold">
-                    <div class = "col-md-4">Name:</div>
-                    <div class = "col-md-4">HP:</div>
+                    <div class = "col-md-3">Name:</div>
+                    <div class = "col-md-3">Actions:</div>
+                    <div class = "col-md-2">HP:</div>
                     <div class = "col-md-4">Action:</div>
                 </div>
         <% opponents.forEach(function(opponent){ %>
             <% if(opponent.name != player[0].name){ %>
                 <div class = "row <%= opponent.name %> ">
-                    <div class = "col-md-4"><%= opponent.name %>:</div>
-                    <div class = "col-md-4" ><%= opponent.stats.hp %></div>
+                    <div class = "col-md-3"><%= opponent.name %>:</div>
+                    <div class = "col-md-3 action-count">
+
+
+                        <% for(var i = 0; i < opponent.actions.length; i++) { %>
+                            <% if (opponent.actions[i].action == "attack"){ %>
+                            x
+                            <% } %>
+                        <% } %>
+
+
+
+
+                    </div>
+                    <div class = "col-md-2" ><%= opponent.stats.hp %></div>
                     <div class = "col-md-4">
                         <button class = "action" data-action = "attack" data-name = <%= opponent.name %>>Attack</button><button class = "action" data-action = "spy" data-name = <%= opponent.name %>>Spy</button>
                     </div>
