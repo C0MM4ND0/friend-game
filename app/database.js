@@ -18,9 +18,25 @@ function find(db, col, obj, res, callback){
 				console.log("MAYDAY! MAYDAY! Crashing.");
 				return console.log(err);
 			}
-
+			console.log("FIND search query:");
+			console.log(obj);
 			console.log("SERVER: actual db pull: " + JSON.stringify(result));
 			callback(result);
+	})
+
+}
+
+function findAction(db, col, obj, res, callback){
+
+	db.collection(col).find(obj).sort({date: 1}).toArray(function(err, result){
+		if (err){
+			console.log("MAYDAY! MAYDAY! Crashing.");
+			return console.log(err);
+		}
+		console.log("FIND search query:");
+		console.log(obj);
+		console.log("SERVER: actual db pull: " + JSON.stringify(result));
+		callback(result);
 	})
 
 }
@@ -78,6 +94,17 @@ function deletePlayer(db, col, player, res, callback){
 	});
 }
 
+function remove(db, col, query, res, callback){
+	
+		db.collection(col).remove(query, function removeThis(err, result) {
+			if (err){
+				console.log("MAYDAY! MAYDAY! Crashing.");
+				return console.log(err);
+			}
+			callback("Database: Record successfully deleted");
+		});
+};
+
 function update(db, col, item, query, res, isArray, array, arrayAction, callback){
 	console.log("starting update in DB...");
 	console.log("item is: ");
@@ -119,9 +146,11 @@ function update(db, col, item, query, res, isArray, array, arrayAction, callback
 
 module.exports.add = add;
 module.exports.find = find;
+module.exports.findAction = findAction;
 module.exports.update = update;
 module.exports.addNewPlayer = addNewPlayer;
 module.exports.deletePlayer = deletePlayer;
+module.exports.remove = remove;
 
 
 

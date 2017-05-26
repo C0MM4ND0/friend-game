@@ -25,12 +25,14 @@
 
         <p>Actions against you:</p>
         <% var i = 0 %>
-        <% player[0].actions.forEach(function(action){ %>
+        <% actions.forEach(function(action){ %>
             
-            <span class = <%= action.action %> >
-                <%= action.username %> played a(n) <%= action.action %> for <%= action.weight%> on <%= Math.round(((Date.now() - action.date)/1000/60)) %> minutes ago
+            <span class = <%= action.date %> >
+                <% if (action.to == player[0].name) { %>
+                    <%= action.from %> played a(n) <%= action.type %> for <%= action.data.weight%> on <%= Math.round(((Date.now() - action.date)/1000/60)) %> minutes ago<br>
+                <% } %> 
             </span>
-            <br>
+            
         <% }) %>
     </div>
 
@@ -45,18 +47,15 @@
         <% opponents.forEach(function(opponent){ %>
             <% if(opponent.name != player[0].name){ %>
                 <div class = "row <%= opponent.name %> ">
-                    <div class = "col-md-3"><%= opponent.name %>:</div>
+                    <div class = "col-md-3"><%= opponent.name %></div>
                     <div class = "col-md-3 action-count">
 
-
-                        <% for(var i = 0; i < opponent.actions.length; i++) { %>
-                            <% if (opponent.actions[i].action == "attack"){ %>
+                        
+                        <% for(var i = 0; i < actions.length; i++) { %>
+                            <% if (actions[i].to == opponent.name) { %>
                             x
-                            <% } %>
+                            <% }%>
                         <% } %>
-
-
-
 
                     </div>
                     <div class = "col-md-2" ><%= opponent.stats.hp %></div>

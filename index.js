@@ -105,36 +105,32 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	var reg = /^\d+$/;				// not sure why i need this...
 
 	// load a game
-	// app.get(/^\/game\/(\d+)\/(.+)$/, function(req, res){					// this matches /game/#/username
-		
-	app.get("/game", function(req, res){
+	
+	app.get("/game", function(req, res){							/* !!! need to make sure a player BELONGS to a game before they're able to see this. */
 
-		// if(req.session.user && req.session.user.name == req.params[1]){								// only let the player see this page if they're the player
-		//	console.log("this is game " + req.params[0] + ", player " + req.params[1]);
+		if(req.session.user){													// only let the player see this page if they're the player
+			dataops.find(db, "player", req.body, res, function(all_players){	// get all the players
+				
+				var query_to = {										// we're looking for all actions where the "to" attribute is the current player
+					to: req.session.user.name
+				}
 
-		if(req.session.user){	
-			dataops.find(db, "player", req.body, res, function(all_players){	// get all the players		    
-			    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
-		    		return el._id == req.session.user._id;
-		    	})
-		    	res.render("game", {player: current_player, opponents: all_players});	
+				var query_from = {										// we're looking for all actions where the "to" attribute is the current player
+					from: req.session.user.name
+				}
+
+				dataops.findAction(db, "action", { $or: [ query_from, query_to]}, res, function(all_actions){
+				    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
+			    		return el._id == req.session.user._id;
+			    	});
+			    	res.render("game", {player: current_player, opponents: all_players, actions: all_actions});	
+		    	});
 			});
 		} else {
 			req.session.message = "You need to log in";
 			res.redirect("/login");
 		}
 	});
-/*
-	app.get("/game", function(req, res){
-		var url;
-		if(req.session.user){
-			url = "/game/" + 1 + "/" + req.session.user.name
-		} else {
-			url = "/login"
-			req.session.message = "You need to log in";	
-		}
-		res.redirect(url);
-	})*/
 
 	app.get("/newplayer", function(req, res){
 		res.render("newplayer", {"session": req.session});
@@ -160,8 +156,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 						archers: 5,
 						ar_lvl: 1,
 						scout: 1
-					},
-					actions: []
+					}
 				}
 
 				dataops.addNewPlayer(db, "player", new_player, res, function(result){
@@ -278,15 +273,17 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				name: req.body.player
 			}; 
 			var action = {
-				action: "attack",
-				username: req.session.user.name,
+				type: "attack",
+				from: req.session.user.name,
+				to: targetPlayer.name,
 				date: dt,
-				weight: req.session.user.stats.strength
+				data: {
+					weight: req.session.user.stats.strength
+				}
 			};
 
-			 dataops.update(db, "player", targetPlayer, action, res, true, "actions", "push", function(targetPlayer){
-		    	console.log("Target player: ");
-		    	console.log(targetPlayer);
+			// dataops.update(db, "action", targetPlayer, action, res, true, "actions", "push", function(targetPlayer){
+			 dataops.add(db, "action", action, res, function(targetPlayer){
 		    	res.send("Server: viciously attacked " + req.body.player);
 		    });
 			
@@ -298,8 +295,9 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			var currentPlayer = {
 				name: req.session.user.name
 			}; 
-			var action = {
-				action: "attack"
+			var query = {
+				type: "attack", 
+				to: req.session.user.name
 			};
 
 			/* 
@@ -307,14 +305,33 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			*/
 
 
-			dataops.update(db, "player", currentPlayer, action, res, true,  "actions", "pull", function(targetPlayer){
-		    	dataops.find(db, "player", {}, res, function(all_players){	// get all the players		    
+			// search for all actions with the type attack against the current player:
+			// sort in a descending order (oldest first)
+
+			dataops.findAction(db, "action", query, res, function(actions_against_player){		
+				console.log("Most recent attack:");
+				console.log(actions_against_player[0]);
+				if(typeof(actions_against_player)[0] != "undefined"){
+					dataops.remove(db, "action", {date: actions_against_player[0].date}, res, function(result){			
+						res.send({date: actions_against_player[0].date, message: "blocked action!"});
+					});
+				} else {
+					res.send({message: "there's nothing to block!"});
+				}
+				
+
+				
+			});
+
+
+			/*dataops.update(db, "player", currentPlayer, query, res, true,  "actions", "pull", function(targetPlayer){
+		    	dataops.find(db, "player", {}, res, function(all_players){			// get all the players		    
 				    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
 			    		return el._id == req.session.user._id;
 			    	})
 			    	res.send("Server: attack blocked!");	
 				});
-	    	});
+	    	});*/
     	}
 
 	});

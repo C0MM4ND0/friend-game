@@ -51,9 +51,12 @@ function main(){
             url: "/game",
             data: action,
             success: function(result){   
-                $(".attack").text("You've successfully blocked this attack");
-
-                console.log(result); 
+                if (result.message != "there's nothing to block!"){
+                    $("."+result.date).text("You've successfully blocked this attack")
+                    $("."+result.date).append("<br>");
+                }
+                    console.log(result.message); 
+                
             }
         })
     });
