@@ -18,9 +18,9 @@ function find(db, col, obj, res, callback){
 				console.log("MAYDAY! MAYDAY! Crashing.");
 				return console.log(err);
 			}
-			console.log("FIND search query:");
+			// console.log("SERVER: full db pull: " + JSON.stringify(result));
+			console.log("FIND: pulled " + result.length + " records from '" + col + "' for the query:");
 			console.log(obj);
-			console.log("SERVER: actual db pull: " + JSON.stringify(result));
 			callback(result);
 	})
 
@@ -33,10 +33,10 @@ function findAction(db, col, obj, res, callback){
 			console.log("MAYDAY! MAYDAY! Crashing.");
 			return console.log(err);
 		}
-		console.log("FIND search query:");
-		console.log(obj);
-		console.log("SERVER: actual db pull: " + JSON.stringify(result));
-		callback(result);
+			// console.log("SERVER: full db pull: " + JSON.stringify(result));
+			console.log("FIND: pulled " + result.length + " records from '" + col + "' for the query:");
+			console.log(obj);
+			callback(result);
 	})
 
 }
@@ -119,7 +119,7 @@ function update(db, col, item, query, res, isArray, array, arrayAction, callback
 		if(arrayAction == "push"){
 			console.log("pushing to actions array");
 			db.collection(col).update(item, {$push: {"actions": JSON.parse(JSON.stringify(query))} }, function displayAfterUpdating(){
-				console.log("Updated successfully! New player stats: ");
+				console.log("UPDATED successfully! New player stats: ");
 				find(db, col, {"name": item.name}, res, callback);
 			});
 		}
@@ -135,7 +135,11 @@ function update(db, col, item, query, res, isArray, array, arrayAction, callback
 	} else {
 		db.collection(col).update(item, {$set: query}, function displayAfterUpdating(){
 			console.log("Updated successfully! New player stats: ");
-			find(db, col, {"name": item.name}, res, callback);
+			find(db, col, {"name": item.name}, res, function showUpdated(updatedItem){
+				console.log("HERE IT IS:");
+				console.log(updatedItem[0]);
+				callback(updatedItem);
+			});
 		});
 	}
 }

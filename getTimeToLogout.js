@@ -6,8 +6,6 @@ function main(){
     var timeLeft;
     var secCounter;
 
-
-
     $.ajax({
         type: "get",
         action: "get",

@@ -41,3 +41,7 @@
 .bold{
     font-weight: bold;
 }
+
+.recently-updated{
+    color: red;
+}

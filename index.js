@@ -31,10 +31,6 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	console.log("Got the database!");
 
 	db = database;										// mongo passes us a database, we store its contents in this variable... I think.
-
-
-/* */
-
 	
 	app.use(bodyParser.urlencoded({
 	    extended: true
@@ -52,7 +48,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	}));
 
 	app.use(function(req, res, next){                  							// logs request URL
-	    console.log("Request: " + req.method.toUpperCase() + " " + req.url);	
+	    var timeNow = new Date();
+	    console.log("Request: " + req.method.toUpperCase() + " " + req.url + " on " + timeNow);	
 	    next();
 	});
 
@@ -65,49 +62,83 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	 	next();
 	})
 
+	// every time a request comes in, we want to resolve all the actions.
+
+	/* for example, let's say all attacks have to be blocked within 10 minutes.
+
+	1. get all actions where date < (now - 10 mins)
+	2. for each action, update the HP for relevant players <-- how will the player find out?
+	3. delete the action object
+
+	*/
+
+	app.use(function(req, res, next){
+		console.log("RESOLVING ATTACKS");
+		
+		var tenMinutesAgo = Date.now() - (1000*60*10); 				// we're in milliseconds by default
+		var tenSecondsAgo = Date.now() - (1000*10);
+		var oneHourAgo = Date.now() - (1000*60*60);
+
+
+		var query = {
+			/* CHANGE TO $LT AFTER TESTING */
+			date: {$lt: oneHourAgo},				// this is a mongo query for greater than
+			type: "attack"
+		}
+
+		dataops.find(db, "action", query, res, function resolveActions(allEligibleActions){		// this gets us all the actions that are more than 10 mins long
+			if(allEligibleActions.length > 0){
+				console.log("pulled " + allEligibleActions.length + " attacks to resolve.");
+				allEligibleActions.forEach(function removeAttack(eligibleAttack){		// for every action...
+					console.log("Starting to work on the attack: " + eligibleAttack.date);
+					playerQuery = {									// ... find the player that action targets
+						name: eligibleAttack.to
+					}
+
+					dataops.find(db, "player", playerQuery, res, function changeStats(attackedPlayer){			
+						console.log("decreasing HP for " + attackedPlayer[0].name)
+						// decrease HP by the weight of the attach
+
+						var query = {
+							"stats.hp": attackedPlayer[0].stats.hp - eligibleAttack.data.weight
+						}
+
+						dataops.update(db, "player", attackedPlayer[0], query, res, null, false, false, function removeAction(attack){	
+
+							var actionToRemove = {
+								date: eligibleAttack.date
+							}
+
+							dataops.remove(db, "action", actionToRemove, res, function confirmRemove(result){
+								console.log("action with date " + actionToRemove.date + " removed!");
+								next();
+							})
+						})
+					});
+
+
+				});
+
+				// console.log("Resolved " + allEligibleActions.length + " attacks");
+			} else {
+				console.log("there are no attacks to resolve!");
+				next();
+			}
+
+		});
+	});
+
+
 	app.get("/", function(req, res){
 	    res.render("index");
 	});
 
 
-/* ----------------- AJAX experiments ----------------- */
-	app.get("/ajax", function(req, res){
-	    res.render("ajax");
-	});
-
-	app.post("/ajax", function(req, res){
-		console.log("SERVER: request to SAVE data is: " + JSON.stringify(req.body));
-
-	    dataops.add(db, "random", req.body, res, function(){
-	    	res.send(req.body);
-	    });
-
-	});
-
-
-	app.post("/ajax-2", function(req, res){
-		console.log("SERVER: request to FIND data is: " + JSON.stringify(req.body));	
-
-		if(req.body.item.toLowerCase() == "all"){			// if we send an empty query, let's return everything
-			req.body = {};
-		}
-
-	    dataops.find(db, "random", req.body, res, function(result){
-	    	res.send(result);
-	    });
-
-	    // res.send is called straight in the database.js function, right after the data is retrieved
-   
-	});
-
-/* ----------------- end AJAX experiments ----------------- */
-	
-	var reg = /^\d+$/;				// not sure why i need this...
 
 	// load a game
 	
 	app.get("/game", function(req, res){							/* !!! need to make sure a player BELONGS to a game before they're able to see this. */
-
+		console.log("GETTING /GAME");
 		if(req.session.user){													// only let the player see this page if they're the player
 			dataops.find(db, "player", req.body, res, function(all_players){	// get all the players
 				
@@ -178,7 +209,6 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		if((req.body.name).replace(/\s/g, '').length >0){
 			dataops.find(db, "player", {name: req.body.name}, res, function displayPlayer(result){
 				if(result.length > 0){
-					console.log("SETTING COOKIE!");
 					req.session.user = result[0];
 
 					var day = 60000*60*24;
@@ -201,8 +231,8 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 
 	app.get("/time-to-logout", function(req, res){
-		console.log("req.session.expires:");
-		console.log(req.session.expires);
+/*		console.log("req.session.expires:");
+		console.log(req.session.expires);*/
 		res.send(req.session.expires);
 	});
 
@@ -212,10 +242,6 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 		res.render("index", {error: "Logged out"});
 	})
 
-
-	app.get("/ajax", function(req, res){
-	    res.render("ajax");
-	});
 
 	app.get("/allplayers", function(req, res){
 	    dataops.find(db, "player", req.body, res, function(result){
@@ -277,12 +303,12 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				from: req.session.user.name,
 				to: targetPlayer.name,
 				date: dt,
+				expires: (1000*60*60), 					// in MS
 				data: {
 					weight: req.session.user.stats.strength
 				}
 			};
 
-			// dataops.update(db, "action", targetPlayer, action, res, true, "actions", "push", function(targetPlayer){
 			 dataops.add(db, "action", action, res, function(targetPlayer){
 		    	res.send("Server: viciously attacked " + req.body.player);
 		    });
@@ -318,22 +344,65 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				} else {
 					res.send({message: "there's nothing to block!"});
 				}
+			});			
+		}
+
+		if(req.body.action == "block-2"){
+			console.log("back end: received block");
+
+			var currentPlayer = {
+				name: req.session.user.name
+			}; 
+			var query = {
+				date: parseInt(req.body.date)
+			};
+
+			/* 
+				I need to figure out how to remove the most recent attack. Check out the $sort mongo function
+			*/
+
+
+			// search for all actions with the type attack against the current player:
+			// sort in a descending order (oldest first)
+
+			dataops.findAction(db, "action", query, res, function(actions_against_player){		
+				console.log("Most recent attack:");
+				console.log(actions_against_player[0]);
+				if(typeof(actions_against_player)[0] != "undefined"){
+					dataops.remove(db, "action", {date: actions_against_player[0].date}, res, function(result){			
+						res.send({date: actions_against_player[0].date, message: "blocked action!"});
+					});
+				} else {
+					res.send({message: "there's nothing to block!"});
+				}
 				
 
 				
 			});
 
+	    }
 
-			/*dataops.update(db, "player", currentPlayer, query, res, true,  "actions", "pull", function(targetPlayer){
-		    	dataops.find(db, "player", {}, res, function(all_players){			// get all the players		    
-				    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
-			    		return el._id == req.session.user._id;
-			    	})
-			    	res.send("Server: attack blocked!");	
-				});
-	    	});*/
+
+
+
+    	if(req.body.action == "getUpdatedInfo"){
+    		console.log("====================");
+    		console.log("SERVER: getting updated health");
+//    		if(req.session.user)}
+    		query = {
+    			name: req.session.user.name
+    		}
+
+    		dataops.find(db, "player", query, res, function(player){
+    			console.log("Updated user health is: " + player[0].stats.hp)
+
+    			var updatedHealth = {
+    				hp: player[0].stats.hp
+    			}
+    			console.log("====================");
+    			res.send(updatedHealth);
+    		});	
     	}
-
 	});
 
 

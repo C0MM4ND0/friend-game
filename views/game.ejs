@@ -18,7 +18,7 @@
 
         <button id = "scout" >Scout</button>
         <button id = "build">Build</button>
-        <button id = "block">Block</button>
+        <button id = "block">Block All</button>
 
         <br>
         <br>
@@ -29,7 +29,17 @@
             
             <span class = <%= action.date %> >
                 <% if (action.to == player[0].name) { %>
-                    <%= action.from %> played a(n) <%= action.type %> for <%= action.data.weight%> on <%= Math.round(((Date.now() - action.date)/1000/60)) %> minutes ago<br>
+
+                    <div class = "row">
+                        <div class = "col-md-8">
+                            <span class = "attack-from"><%= action.from %></span> has played an <%= action.type %> for <span class = "weight"><%= action.data.weight%></span>, issued <span class = "action-time-left"><%= Math.floor(((Date.now() - action.date)/1000)) %></span>/<span class = "action-expires"><%= action.expires/1000 %></span> seconds ago 
+                        </div>
+
+                        <div class = "col-md-4">
+                            <button class = "block" id = "<%= action.date %>">block</button><br>
+                        </div>
+                    </div>
+                     
                 <% } %> 
             </span>
             
