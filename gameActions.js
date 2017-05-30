@@ -157,16 +157,6 @@ function main(){
 
 
 
-        function resolveAttack(attackDate){
-
-                
-
-
-        }
-
-
-
-
     }, 1000) 
 
 }

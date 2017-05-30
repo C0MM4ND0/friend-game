@@ -18,7 +18,7 @@ app.use(express.static(__dirname + '/'));               // sets the correct view
 const main = require("./app/main");
 const dataops = require("./app/database");
 
-var processing = false;
+var processingAttacks = false;
 
 
 
@@ -76,7 +76,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	*/
 
 	app.use(function resolveAttacks(req, res, next){
-		if(!processing){
+		if(!processingAttacks){												// if we're already working on processing attacks...
 			console.log("=== RESOLVING ATTACKS ====");
 
 			var tenMinutesAgo = Date.now() - (1000*60*10); 				// we're in milliseconds by default
@@ -97,7 +97,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				console.log("Fetched " + allUnresolvedActions.length + " actions");
 				if(allUnresolvedActions.length > 0){
 
-					processing = true;
+					processingAttacks = true;
 
 					console.log("======== FOUND UNRESOLVED ACTIONS ======");
 					console.log("resolving " + allUnresolvedActions.length + " actions.");
@@ -139,7 +139,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 										actionCounter++;
 										resolveAttack(actionCounter);					// this SUPPOSEDLY forces the counter to run in a synchronour manner
 									} else {
-										processing = false;
+										processingAttacks = false;
 										next();
 									}
 								})
@@ -163,104 +163,6 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			next();
 		}
 	});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ========START RESOLVE ACTION ========== 
-	app.use(function(req, res, next){
-
-		
-		console.log("RESOLVING ATTACKS");
-	
-		var tenMinutesAgo = Date.now() - (1000*60*10); 				// we're in milliseconds by default
-		var tenSecondsAgo = Date.now() - (1000*10);
-		var oneHourAgo = Date.now() - (1000*60*60);
-
-
-		var query = {
-			
-			date: {$lt: tenSecondsAgo},				// this is a mongo query for greater than
-			type: "attack"
-		}
-
-		dataops.find(db, "action", query, res, function resolveActions(allEligibleActions){		// this gets us all the actions that are more than 10 mins long
-			if(allEligibleActions.length > 0){
-				console.log("===== ONE =====");
-				console.log("pulled " + allEligibleActions.length + " attacks to resolve.");
-				allEligibleActions.forEach(function removeAttack(eligibleAttack){		// for every action...
-
-					console.log("Starting to work on the attack: " + eligibleAttack.date);
-					var playerQuery = {									// ... find the player that action targets
-						name: eligibleAttack.to
-					}
-
-					dataops.find(db, "player", playerQuery, res, function changeStats(attackedPlayer){			
-						console.log("decreasing HP for " + attackedPlayer[0].name)
-						console.log("===== TWO =====");
-						// decrease HP by the weight of the attach
-
-						var query = {
-							"stats.hp": attackedPlayer[0].stats.hp - eligibleAttack.data.weight
-						}
-
-						dataops.update(db, "player", attackedPlayer[0], query, res, null, false, false, function removeAction(attack){	
-							console.log("===== THREE =====");
-							var actionToRemove = {
-								date: eligibleAttack.date
-							}
-
-							dataops.remove(db, "action", actionToRemove, res, function confirmRemove(result){
-								console.log("===== FOUR =====");
-								console.log("action with date " + actionToRemove.date + " removed!");
-								next();
-							})
-						})
-					});
-
-
-				});
-
-				// console.log("Resolved " + allEligibleActions.length + " attacks");
-			} else {
-				console.log("there are no attacks to resolve!");
-				next();
-			}
-
-		});
-		
-		
-	});
-
-
-
-========START RESOLVE ACTION ==========  */
 
 
 
