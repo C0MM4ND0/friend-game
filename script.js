@@ -4,7 +4,7 @@ function main(){
 
     var counter = 1;
 
-    console.log("hello world!");
+    console.log("script.js loaded");
 
 
     $("#adder").click(function(){

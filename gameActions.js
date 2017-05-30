@@ -38,12 +38,12 @@ function main(){
         })
     });
 
-    $("#block").click(function(){
+    $("#block-auto").click(function(){
 
         console.log("attempting to block attack");
 
         action = {
-            action: "block"
+            action: "block-auto"
         }
 
         $.ajax({
@@ -61,12 +61,12 @@ function main(){
         })
     });
 
-    $(".block").click(function(){
+    $(".block-single-attack").click(function(){
 
         console.log("attempting to block attack");
 
         action = {
-            action: "block-2",
+            action: "block-single-attack",
             date: $(this).attr("id")
         }
 
@@ -127,24 +127,29 @@ function main(){
             if(timeNow <= expires){
                 $(this).text(timeNow);
             } else {
-
-                    console.log("getting updated info!");
+                    console.log("Attack expired - getting updated HP");
 
                     action = {
                         action: "getUpdatedInfo"
                     }
+
+
 
                     $.ajax({                                    // get new player HP from server
                         type: "post",
                         url: "/game",
                         data: action,
                         success: function(result){
-                            var damage = parseInt($("#hp").text()) - result.hp
+                            var damage = parseInt($("#hp").text()) - result.hp;
                             parent.text("An attack from " + assailant + " hits you for " + damage + " hp");
-                            parent.append("<br>");
+
+                            parent.next(".single-block-div").find(".block-single-attack").hide();
+                            console.log("Response from server: ");
+                            console.log(result);
+
                             $("#hp").text(result.hp);
                             $("#hp").addClass("recently-updated ");
-                            //$(this).text("You've taken " + result.damage + " damage as a result of an attack from  " + result.opponent);
+
                         }
                     })            
             }
@@ -152,14 +157,17 @@ function main(){
 
 
 
+        function resolveAttack(attackDate){
 
-    }, 1000)
-        
-
-
+                
 
 
+        }
 
+
+
+
+    }, 1000) 
 
 }
 
