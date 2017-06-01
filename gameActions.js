@@ -2,6 +2,8 @@ $(document).ready(main);
 
 function main(){
 
+    fetchActions();
+
     console.log("ready!");
 
     $("#scout").click(function(){
@@ -52,10 +54,13 @@ function main(){
             data: action,
             success: function(result){   
                 if (result.message != "there's nothing to block!"){
-                    $("."+result.date).text("You've successfully blocked this attack")
-                    $("."+result.date).append("<br>");
+                    $("#"+result.date).text("You've successfully blocked this attack")
+                    $("#"+result.date).append("<br>");
+                    $("#"+result.date).removeClass("active-action");
+                    $("#"+result.date).next(".single-block-div").hide();
                 }
-                    console.log(result.message); 
+                
+                console.log(result.message); 
                 
             }
         })
@@ -76,10 +81,13 @@ function main(){
             data: action,
             success: function(result){   
                 if (result.message != "there's nothing to block!"){
-                    $("."+result.date).text("You've successfully blocked this attack")
-                    $("."+result.date).append("<br>");
+                    $("#"+result.date).text("You've successfully blocked this attack")
+                    $("#"+result.date).append("<br>");
+                    $("#"+result.date).removeClass("active-action");
+                    $("#"+result.date).next(".single-block-div").hide();
                 }
-                    console.log(result.message); 
+                
+                console.log(result.message); 
                 
             }
         })
@@ -112,52 +120,104 @@ function main(){
 
     /* Keep track of how much time is left to block */
 
-    var attackTime = setInterval(function(){
-        console.log("updating attack time");
+    function fetchActions(){
 
+        // keep track of all the actions against the logged in player
 
-        $(".action-time-left").each(function(){
+        action = {
+            action: "fetchActions"
+        }
 
-            var parent = $(this).parent();
-            var assailant = parent.find(".attack-from").text();             // this could also be done with sibling() ?s
-            var timeNow = parseInt($(this).text()) + 1;
-            var expires = parseInt($(this).next(".action-expires").text());
-            console.log(timeNow + "/" + expires)
-
-            if(timeNow <= expires){
-                $(this).text(timeNow);
-            } else {
-                    console.log("Attack expired - getting updated HP");
-
-                    action = {
-                        action: "getUpdatedInfo"
-                    }
-
-
-
-                    $.ajax({                                    // get new player HP from server
-                        type: "post",
-                        url: "/game",
-                        data: action,
-                        success: function(result){
-                            var damage = parseInt($("#hp").text()) - result.hp;
-                            parent.text("An attack from " + assailant + " hits you for " + damage + " hp");
-
-                            parent.next(".single-block-div").find(".block-single-attack").hide();
-                            console.log("Response from server: ");
-                            console.log(result);
-
-                            $("#hp").text(result.hp);
-                            $("#hp").addClass("recently-updated ");
-
-                        }
-                    })            
+        $.ajax({                                    
+            type: "post",
+            url: "/game",
+            data: action,
+            success: function(result){
+                placeActionsOnPage(result);
             }
-        });
+        }) 
+
+    }
+
+    function placeActionsOnPage(result){
+                if(result.message != "fail"){
+                    
+                    result.data.forEach(function(action){
+
+                        /* set how much time is left */
+
+                        var thisAction = $("#" + action.date);
+                        var msLeft = action.date + action.expires - Date.now();
+                        var minsLeft = Math.floor((msLeft/1000)/60);
+                        var secsLeft = Math.floor(msLeft/1000) - (minsLeft*60);
+
+                        if(secsLeft.toString().length == 1){
+                            secsLeft = "0" + secsLeft;
+                        }
+
+                        thisAction.children(".name").text(action.from);
+                        thisAction.children(".weight").text(action.data.weight);
+                        thisAction.children(".mins-left").text(minsLeft);
+                        thisAction.children(".secs-left").text(secsLeft);
 
 
+                        /* set countdown */
 
-    }, 1000) 
+                        function countDownSecond(){
+                            if(thisAction.hasClass("active-action")){
+
+                                var secondsLeft = parseInt(thisAction.children(".secs-left").text());
+                                var minutesLeft = parseInt(thisAction.children(".mins-left").text());
+
+                                secondsLeft--;
+                                
+                                if(secondsLeft < 0){
+                                    secondsLeft = 59;
+                                    minutesLeft--;
+                                }
+
+                                if(secondsLeft.toString().length == 1){
+                                    secondsLeft = "0" + secondsLeft;
+                                }
+
+                                thisAction.children(".secs-left").text(secondsLeft);
+                                thisAction.children(".mins-left").text(minutesLeft);
+                            } else {
+                                clearInterval(ticker);
+                                clearTimeout(expire);
+                            }
+                        }
+
+
+                        var ticker = setInterval(countDownSecond, 1000);
+
+
+                        /* set expiration timer */
+
+                        var expire = setTimeout(function(){
+                            if(thisAction.hasClass("active-action")){
+                                thisAction.text(action.from + " hit you for " + action.data.weight).css("color", "red");
+                                thisAction.removeClass("active-action");
+                                thisAction.next(".single-block-div").hide();
+    
+                                var newHP = parseInt($("#hp").text()) - action.data.weight;
+                                if(thisAction.hasClass("active-action")){
+                                    $("#hp").text(newHP).css("color", "red");
+                                }
+    
+                                clearInterval(ticker);
+                            }
+
+                        }, msLeft)
+
+                    })
+
+
+                } else {
+                    console.log(result.data);
+                }
+                
+            }
 
 }
 

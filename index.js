@@ -88,7 +88,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 
 			var allActions = {
 				
-				date: {$lt: tenSecondsAgo},				// this is a mongo query for greater than
+				date: {$lt: tenSecondsAgo},				// this is a mongo query for less than
 				type: "attack"							// date < 10 seconds ago means date that is older than 10 seconds
 			}
 
@@ -451,6 +451,31 @@ var text = "hello there!";
 	    		});
 		
 	    	}
+
+
+	    	if(req.body.action == "fetchActions"){
+
+
+	    		console.log("SERVER:  fetching all the actions against the player")
+
+
+	    		actionQuery = {
+	    			to: req.session.user.name
+	    		}
+
+	    		dataops.find(db, "action", actionQuery, res, function actionsAgainstPlayer(actions) {
+	    			if(actions.length > 0){
+	    				res.send({message: "SERVER: found actions against " + req.session.user.name, data: actions});
+	    			} else {
+	    				res.send({message: "fail", data: "SERVER: There are no actions against this player"});
+	    			}
+
+
+	    		})
+	    	}
+
+
+
     	} else {
     		console.log("can't attack - you're not logged in!");
     	}
