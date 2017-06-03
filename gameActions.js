@@ -141,7 +141,7 @@ function main(){
 
     function placeActionsOnPage(result){
                 if(result.message != "fail"){
-                    
+
                     result.data.forEach(function(action){
 
                         /* set how much time is left */
@@ -201,9 +201,8 @@ function main(){
                                 thisAction.next(".single-block-div").hide();
     
                                 var newHP = parseInt($("#hp").text()) - action.data.weight;
-                                if(thisAction.hasClass("active-action")){
-                                    $("#hp").text(newHP).css("color", "red");
-                                }
+                                $("#hp").text(newHP).css("color", "red");
+                                
     
                                 clearInterval(ticker);
                             }
