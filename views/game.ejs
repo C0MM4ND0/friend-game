@@ -4,13 +4,14 @@
     <div class = "col-md-8">
 
         <p>Player name: <%= player[0].name %></p>
+        <p>Coin: <span id = "coin"><%= player[0].resources.coin.count %></span></p>
         <p>Player capital:  <%= player[0].capital %></p>
         <p>
         	HP:  <span id = "hp"><%= player[0].stats.hp %></span> 
             <br>
             Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
         	<br>	
-        	Footmen:  <%= player[0].units.footmen %>, lvl. <%= player[0].units.ft_lvl %>
+        	Footmen:  <span id = "footman-count"><%= player[0].units.footmen %></span>, lvl. <%= player[0].units.ft_lvl %>
         	<br>
         	Archers:  <%= player[0].units.archers %>, lvl. <%= player[0].units.ar_lvl %>
         </p>
@@ -76,6 +77,21 @@
 
 <br>
 
+<hr>
+
+<p>Create Units</p>
+
+<div class = "row">
+    <div class = "col-md-2">
+        Footman
+    </div>
+    <div class = "col-md-1">
+        100
+    </div>
+    <div class = "col-md-1">
+        <button class = "buy-footman">Buy</button>
+    </div>
+</div>
 
 
 <% include partials/_footer.ejs %>

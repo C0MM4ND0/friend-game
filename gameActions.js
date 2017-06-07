@@ -118,6 +118,35 @@ function main(){
     });
 
 
+
+    $(".buy-footman").click(function(){
+
+        action = {
+            action: "buy",
+            unit: "footman"
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/game",
+            data: action,
+            success: function(result){
+                if(result.message == "success"){
+                    console.log("boom. bought a footman. buying people is rad!");
+                    $("#footman-count").text(result.footmanCount).css("color", "blue");
+                    $("#coin").text(result.coin).css("color", "blue");
+                } else {
+                    $(".error").text("Not enough coin!");
+                    $("#coin").css("color", "red");
+                }
+            }
+        })
+    });
+
+
+
+
+
     /* Keep track of how much time is left to block */
 
     function fetchActions(){

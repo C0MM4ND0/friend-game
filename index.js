@@ -229,6 +229,12 @@ var text = "hello there!";
 						strength: 10,
 						walls: "wood",
 					},
+					resources: {
+						coin: {
+							count: 1000, 
+							lastUpdated: Date.now()
+						}
+					},
 					units: {
 						footmen: 10,
 						ft_lvl: 1,
@@ -472,6 +478,57 @@ var text = "hello there!";
 
 
 	    		})
+	    	}
+
+	    	if(req.body.action == "buy"){
+	    		console.log("SERVER: Gonna buy us a bitch");
+
+	    		if(req.body.unit == "footman"){
+	    			console.log("SERVER: Gonna buy us a swordsman bitch with feet");
+
+	    			playerQuery = {
+	    				name: req.session.user.name
+	    			}
+
+
+	    			dataops.find(db, "player", playerQuery, res, function checkForCoin(thisPlayer){
+	    				console.log("Player has " + thisPlayer[0].resources.coin.count + " coin");
+
+	    				if(thisPlayer[0].resources.coin.count >= 100){
+
+	    					updatedStats = {
+	    						"resources.coin.count": (thisPlayer[0].resources.coin.count-100),
+	    						"units.footmen": (thisPlayer[0].units.footmen + 1)
+	    					}
+
+	    					dataops.update(db, "player", playerQuery, updatedStats, res, false, null, null, function confirmUpdatedStats(updatedPlayer){
+	    						console.log("SERVER: Successfully updated player footman count!");
+	    						updatedPlayerData = {
+	    							message: "success",
+	    							footmanCount: updatedPlayer[0].units.footmen,
+	    							coin: updatedPlayer[0].resources.coin.count
+	    						}
+
+	    						res.send(updatedPlayerData)
+	    					})
+
+
+
+
+	    				} else {
+	    					console.log("Not enough coin.");
+	    					res.send({message: "error", content: "Not enough coin"});
+	    				}
+
+
+
+	    			})
+
+	    		} else {
+	    			res.send({message: "error", content: "We don't have one of those"});
+	    		}
+
+
 	    	}
 
 
