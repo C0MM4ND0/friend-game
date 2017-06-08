@@ -10,10 +10,12 @@
         	HP:  <span id = "hp"><%= player[0].stats.hp %></span> 
             <br>
             Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
+            <br>
+            Workers:  <span class = "unit" id = "worker-count"><%= player[0].units.worker %></span>
         	<br>	
-        	Footmen:  <span id = "footman-count"><%= player[0].units.footmen %></span>, lvl. <%= player[0].units.ft_lvl %>
-        	<br>
-        	Archers:  <%= player[0].units.archers %>, lvl. <%= player[0].units.ar_lvl %>
+        	Footmen:  <span class = "unit" id = "footman-count"><%= player[0].units.footman %></span>, lvl. <%= player[0].units.ft_lvl %>
+            <br>
+        	Archers:  <span class = "unit" id = "archer-count"><%= player[0].units.archer %></span>, lvl. <%= player[0].units.ar_lvl %>
         </p>
         <p></p>
 
@@ -83,15 +85,49 @@
 
 <div class = "row">
     <div class = "col-md-2">
+        <strong>Unit</strong>
+    </div>
+    <div class = "col-md-1">
+        <strong>Cost</strong>
+    </div>
+</div>
+<div class = "row">
+    <div class = "col-md-2">
         Footman
     </div>
     <div class = "col-md-1">
         100
     </div>
     <div class = "col-md-1">
-        <button class = "buy-footman">Buy</button>
+        <button class = "buy-button" id = "footman">Buy</button>
+    </div>
+    <br>
+</div>
+<div class = "row">
+    <div class = "col-md-2">
+        Worker
+    </div>
+    <div class = "col-md-1">
+        50
+    </div>
+    <div class = "col-md-1">
+        <button class = "buy-button" id = "worker">Buy</button>
     </div>
 </div>
+
+<div class = "row">
+    <div class = "col-md-2">
+        Archer
+    </div>
+    <div class = "col-md-1">
+        200
+    </div>
+    <div class = "col-md-1">
+        <button class = "buy-button" id = "archer">Buy</button>
+    </div>
+</div>
+
+
 
 
 <% include partials/_footer.ejs %>

@@ -119,11 +119,14 @@ function main(){
 
 
 
-    $(".buy-footman").click(function(){
+    $(".buy-button").click(function(){
+
+        var selectedUnit =  $(this).attr("id");
+        console.log("Gonna try to buy a " + selectedUnit);
 
         action = {
             action: "buy",
-            unit: "footman"
+            unit: selectedUnit
         }
 
         $.ajax({
@@ -131,9 +134,12 @@ function main(){
             url: "/game",
             data: action,
             success: function(result){
+                $(".unit").css("color", "black");
+
                 if(result.message == "success"){
-                    console.log("boom. bought a footman. buying people is rad!");
-                    $("#footman-count").text(result.footmanCount).css("color", "blue");
+                    console.log("boom. bought a " + selectedUnit +  ". buying people is rad!");
+                    var unitCountSelector = "#" + selectedUnit + "-count";
+                    $(unitCountSelector).text(result.unitCount).css("color", "blue");
                     $("#coin").text(result.coin).css("color", "blue");
                 } else {
                     $(".error").text("Not enough coin!");

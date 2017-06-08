@@ -21,6 +21,16 @@ const dataops = require("./app/database");
 var processingAttacks = false;
 
 
+/* Unit cost*/
+/* THIS IS TERRIBLE AND NEEDS TO BE MOVED TO A DB*/
+
+var unitCost = {
+	"worker": 50,
+	"footman": 100,
+	"archer": 200
+}
+
+
 
 /* Connecting to the DB */
 
@@ -236,9 +246,10 @@ var text = "hello there!";
 						}
 					},
 					units: {
-						footmen: 10,
+						worker: 0,
+						footman: 10,
 						ft_lvl: 1,
-						archers: 5,
+						archer: 5,
 						ar_lvl: 1,
 						scout: 1
 					}
@@ -483,56 +494,47 @@ var text = "hello there!";
 	    	if(req.body.action == "buy"){
 	    		console.log("SERVER: Gonna buy us a bitch");
 
-	    		if(req.body.unit == "footman"){
+	    		
 	    			console.log("SERVER: Gonna buy us a swordsman bitch with feet");
 
 	    			playerQuery = {
 	    				name: req.session.user.name
 	    			}
-
-
 	    			dataops.find(db, "player", playerQuery, res, function checkForCoin(thisPlayer){
 	    				console.log("Player has " + thisPlayer[0].resources.coin.count + " coin");
 
-	    				if(thisPlayer[0].resources.coin.count >= 100){
+	    				if(thisPlayer[0].resources.coin.count >= unitCost[req.body.unit]){
 
-	    					updatedStats = {
+	    					var count = "resources.coin.count";
+	    					var unit = "units."+ req.body.unit;
+
+	    					updatedStats = {}
+	    					updatedStats[count] = thisPlayer[0].resources.coin.count-unitCost[req.body.unit];
+	    					updatedStats[unit] = thisPlayer[0].units[req.body.unit] + 1;
+
+/*	    					updatedStats = {
 	    						"resources.coin.count": (thisPlayer[0].resources.coin.count-100),
-	    						"units.footmen": (thisPlayer[0].units.footmen + 1)
-	    					}
+	    						"units.footman": (thisPlayer[0].units.footmen + 1)
+	    					}*/
 
 	    					dataops.update(db, "player", playerQuery, updatedStats, res, false, null, null, function confirmUpdatedStats(updatedPlayer){
 	    						console.log("SERVER: Successfully updated player footman count!");
 	    						updatedPlayerData = {
 	    							message: "success",
-	    							footmanCount: updatedPlayer[0].units.footmen,
+	    							unitCount: updatedPlayer[0].units[req.body.unit],
 	    							coin: updatedPlayer[0].resources.coin.count
 	    						}
 
 	    						res.send(updatedPlayerData)
 	    					})
-
-
-
-
 	    				} else {
-	    					console.log("Not enough coin.");
+	    					console.log("SERVER: Not enough coin.");
 	    					res.send({message: "error", content: "Not enough coin"});
 	    				}
-
-
-
 	    			})
 
-	    		} else {
-	    			res.send({message: "error", content: "We don't have one of those"});
-	    		}
-
-
+	    		
 	    	}
-
-
-
     	} else {
     		console.log("can't attack - you're not logged in!");
     	}
