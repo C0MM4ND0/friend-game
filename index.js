@@ -186,22 +186,50 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	
 	app.get("/game", function(req, res){							/* !!! need to make sure a player BELONGS to a game before they're able to see this. */
 		console.log("GETTING /GAME");
+
+		/* What do we need when a game loads?
+			- all the logged in player info
+			- all the info about opponents
+			- all the actions against a player
+			- all the player's units
+			
+		*/	
+
+
 		if(req.session.user){
-			dataops.find(db, "player", req.body, res, function(all_players){	// get all the players
+			dataops.find(db, "player", req.body, res, function getAllPlayers(all_players){	// get all the players
 				
 				var query_to = {										// we're looking for all actions where the "to" attribute is the current player
 					to: req.session.user.name
 				}
 
-				var query_from = {										// we're looking for all actions where the "to" attribute is the current player
+				var query_from = {										// we're looking for all actions where the "from" attribute is the current player
 					from: req.session.user.name
 				}
 
-				dataops.findAction(db, "action", { $or: [ query_from, query_to]}, res, function(all_actions){
-				    var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
-			    		return el._id == req.session.user._id;
+				dataops.findAction(db, "action", { $or: [ query_from, query_to]}, res, function getAllActions(all_actions){
+			    	dataops.find(db, "units", {owner: req.session.user.name}, res, function getAllUnits(units){
+			    		var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
+				    		return el._id == req.session.user._id;
+				    	});
+
+			    		var all_units = units.filter(function(unit){
+			    			return unit.owner == req.session.user.name
+			    		})
+
+			    		var workerCount = all_units.filter(function(unit){ return unit.type =="worker" }).length;
+			    		var footmanCount = all_units.filter(function(unit){ return unit.type == "footman" }).length;
+			    		var archerCount = all_units.filter(function(unit){ return unit.type == "archer"  }).length;
+
+			    		var player_units = {
+			    			worker: workerCount,
+			    			footman: footmanCount,
+			    			archer: archerCount
+			    		}
+
+
+			    		res.render("game", {player: current_player[0], opponents: all_players, actions: all_actions, units: player_units});	
 			    	});
-			    	res.render("game", {player: current_player, opponents: all_players, actions: all_actions});	
 		    	});
 			});
 		} else {
@@ -228,37 +256,37 @@ var text = "hello there!";
 
 	app.post("/newplayer", function(req, res){
 		console.log(req.body);
-		if((req.body.name).replace(/\s/g, '').length > 0 && (req.body.capital).replace(/\s/g, '').length > 0){			// let's make sure the input name isn't empty
-				
-				var new_player = {
-					name: req.body.name,
-					capital: req.body.capital,
+		if((req.body.name).replace(/\s/g, '').length > 0 && (req.body.capital).replace(/\s/g, '').length > 0){			// let's make sure the input name isn't empty	
+			var newPlayer = {
+				name: req.body.name,
+				capital: req.body.capital,
+				walls: "wood",
+				stats: {
+					hp: 100,
+					strength: 10,
 					walls: "wood",
-					stats: {
-						hp: 100,
-						strength: 10,
-						walls: "wood",
-					},
-					resources: {
-						coin: {
-							count: 1000, 
-							lastUpdated: Date.now()
-						}
-					},
-					units: {
-						worker: 0,
-						footman: 10,
-						ft_lvl: 1,
-						archer: 5,
-						ar_lvl: 1,
-						scout: 1
+				},
+				resources: {
+					coin: {
+						count: 1000, 
+						lastUpdated: Date.now()
 					}
 				}
+			}
 
-				dataops.addNewPlayer(db, "player", new_player, res, function(result){
-				req.session.message = result;
-				res.redirect("/login");
+			var newScout = {
+				type: "scout",
+				lastUpdated: Date.now(),
+				owner: newPlayer.name
+			}
+
+			dataops.addNewPlayer(db, "player", newPlayer, res, function addUnits(newPlayerMessage){
+				dataops.add(db, "unit", newScout, res, function (result){
+					req.session.message = newPlayerMessage;
+					res.redirect("/login");
+				});	
 			});
+
 		} else {
 			res.send("cannot save player with no name or capital");
 		}
@@ -495,37 +523,49 @@ var text = "hello there!";
 	    		console.log("SERVER: Gonna buy us a bitch");
 
 	    		
-	    			console.log("SERVER: Gonna buy us a swordsman bitch with feet");
+	    			console.log("SERVER: Gonna buy us a sword bitch with feet");
 
 	    			playerQuery = {
 	    				name: req.session.user.name
 	    			}
+	    			
 	    			dataops.find(db, "player", playerQuery, res, function checkForCoin(thisPlayer){
 	    				console.log("Player has " + thisPlayer[0].resources.coin.count + " coin");
 
 	    				if(thisPlayer[0].resources.coin.count >= unitCost[req.body.unit]){
 
+	    					var newUnit = {
+	    						type: req.body.unit,
+	    						lastUpdated: Date.now(),
+	    						job: req.body.unit,
+	    						owner: thisPlayer[0].name
+	    					}
+
 	    					var count = "resources.coin.count";
-	    					var unit = "units."+ req.body.unit;
 
-	    					updatedStats = {}
+	    					updatedStats = {}													// decrease how much coin the player has
 	    					updatedStats[count] = thisPlayer[0].resources.coin.count-unitCost[req.body.unit];
-	    					updatedStats[unit] = thisPlayer[0].units[req.body.unit] + 1;
 
-/*	    					updatedStats = {
-	    						"resources.coin.count": (thisPlayer[0].resources.coin.count-100),
-	    						"units.footman": (thisPlayer[0].units.footmen + 1)
-	    					}*/
 
-	    					dataops.update(db, "player", playerQuery, updatedStats, res, false, null, null, function confirmUpdatedStats(updatedPlayer){
-	    						console.log("SERVER: Successfully updated player footman count!");
-	    						updatedPlayerData = {
-	    							message: "success",
-	    							unitCount: updatedPlayer[0].units[req.body.unit],
-	    							coin: updatedPlayer[0].resources.coin.count
-	    						}
+	    					dataops.update(db, "player", playerQuery, updatedStats, res, false, null, null, function confirmUpdatedCoinCount(updatedPlayer){		// this updates player coin count
+	    						console.log("SERVER: Successfully updated player coin count!");
 
-	    						res.send(updatedPlayerData)
+		    						dataops.add(db, "unit", newUnit, res, function createUnitForPlayer(newUnit){		// this creates the new unit
+		    							var unitQuery = {
+		    								owner: thisPlayer[0].name,
+		    								type: req.body.unit
+		    							}
+
+		    							dataops.find(db, "unit", unitQuery, res, function returnNumOfUnits(unitNum){		// this returns how much of that unit the player has
+		    								updatedPlayerData = {
+				    							message: "success",
+				    							unitCount: unitNum.length,
+				    							coin: updatedPlayer[0].resources.coin.count
+				    						}
+				    						res.send(updatedPlayerData)
+		    							});
+	    						});
+	
 	    					})
 	    				} else {
 	    					console.log("SERVER: Not enough coin.");

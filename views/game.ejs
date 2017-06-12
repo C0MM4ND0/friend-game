@@ -3,19 +3,19 @@
 <div class = "row">
     <div class = "col-md-8">
 
-        <p>Player name: <%= player[0].name %></p>
-        <p>Coin: <span id = "coin"><%= player[0].resources.coin.count %></span></p>
-        <p>Player capital:  <%= player[0].capital %></p>
+        <p>Player name: <%= player.name %></p>
+        <p>Coin: <span id = "coin"><%= player.resources.coin.count %></span></p>
+        <p>Player capital:  <%= player.capital %></p>
         <p>
-        	HP:  <span id = "hp"><%= player[0].stats.hp %></span> 
+        	HP:  <span id = "hp"><%= player.stats.hp %></span> 
             <br>
-            Strength:  <%= player[0].stats.strength %> | Walls:  <%= player[0].stats.walls %>
+            Strength:  <%= player.stats.strength %> | Walls:  <%= player.stats.walls %>
             <br>
-            Workers:  <span class = "unit" id = "worker-count"><%= player[0].units.worker %></span>
+            Workers:  <span class = "unit" id = "worker-count"><%= units.worker %></span>
         	<br>	
-        	Footmen:  <span class = "unit" id = "footman-count"><%= player[0].units.footman %></span>, lvl. <%= player[0].units.ft_lvl %>
-            <br>
-        	Archers:  <span class = "unit" id = "archer-count"><%= player[0].units.archer %></span>, lvl. <%= player[0].units.ar_lvl %>
+        	Footmen:  <span class = "unit" id = "footman-count"><%= units.footman %></span>
+        	<br>
+            Archers:  <span class = "unit" id = "archer-count"><%= units.archer %></span>
         </p>
         <p></p>
 
@@ -29,7 +29,7 @@
         <p>Actions against you:</p>
 
         <% actions.forEach(function(action){ %>
-            <% if (action.to == player[0].name) { %>
+            <% if (action.to == player.name) { %>
                 <div class = "row">
                     <div class = "col-md-8 active-action" id = "<%= action.date %>">
                         <span class = "name"></span> attacked you for <span class = "weight"></span>. You have <span class = "mins-left"></span>:<span class = "secs-left"></span> to respond. 
@@ -53,7 +53,7 @@
                     <div class = "col-md-4">Action:</div>
                 </div>
         <% opponents.forEach(function(opponent){ %>
-            <% if(opponent.name != player[0].name){ %>
+            <% if(opponent.name != player.name){ %>
                 <div class = "row <%= opponent.name %> ">
                     <div class = "col-md-3"><%= opponent.name %></div>
                     <div class = "col-md-3 action-count">
@@ -128,6 +128,11 @@
 </div>
 
 
+<hr>
+
+<p>Assign workers:</p>
+
+<% player.resources %>
 
 
 <% include partials/_footer.ejs %>
