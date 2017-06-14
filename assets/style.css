@@ -45,3 +45,7 @@
 .recently-updated{
     color: red;
 }
+
+.assign{
+    border: 1px solid black;
+}

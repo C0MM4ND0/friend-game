@@ -6,7 +6,7 @@ function main(){
 
     console.log("ready!");
 
-    $("#scout").click(function(){
+    $("#scout").click(function(){2
 
         action = {
             action: "scout",
@@ -124,7 +124,7 @@ function main(){
         var selectedUnit =  $(this).attr("id");
         console.log("Gonna try to buy a " + selectedUnit);
 
-        action = {
+        var action = {
             action: "buy",
             unit: selectedUnit
         }
@@ -147,6 +147,39 @@ function main(){
                 }
             }
         })
+    });
+
+    $(".assign").click(function(){
+        var unitId = $(this).data("id");
+        var unitAction = $(this).data("action");
+        console.log("Assigning worker " + unitId + " to work: " + unitAction);
+
+        var unitToAssign = {
+            id: unitId,
+            action: "assign",
+            job: unitAction
+        }
+
+        $.ajax({
+            type: "post",
+            url: "/game",
+            data: unitToAssign,
+            success: function(result){
+                if (result.message == "fail"){
+                    $(".error").text("This unit no longer exists");
+                } else {
+                    console.log("successfully assigned unit! It's new job is: " + result.unit.job);
+                    var selector = '.assign[data-action="' + result.unit.job + '"][data-id=' + result.unit.id + ']';
+                    console.log(" selecting: " + selector);
+                    $(selector).text(result.unit.jobMessage).prop("disabled",true);
+
+                }
+            }
+        });
+
+
+
+
     });
 
 
@@ -252,6 +285,11 @@ function main(){
                 }
                 
             }
+
+    function capitalize(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
 
 }
 

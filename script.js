@@ -95,6 +95,7 @@ function main(){
                 success: function(result){
                     console.log(result);
                     $("#" + player).closest(".player-info").remove();
+                    window.location.replace("logout");
                 }
             })
         } else {

@@ -11,11 +11,11 @@
             <br>
             Strength:  <%= player.stats.strength %> | Walls:  <%= player.stats.walls %>
             <br>
-            Workers:  <span class = "unit" id = "worker-count"><%= units.worker %></span>
+            Workers:  <span class = "unit" id = "worker-count"><%= units.worker.length %></span>
         	<br>	
-        	Footmen:  <span class = "unit" id = "footman-count"><%= units.footman %></span>
+        	Footmen:  <span class = "unit" id = "footman-count"><%= units.footman.length%></span>
         	<br>
-            Archers:  <span class = "unit" id = "archer-count"><%= units.archer %></span>
+            Archers:  <span class = "unit" id = "archer-count"><%= units.archer.length %></span>
         </p>
         <p></p>
 
@@ -131,6 +131,24 @@
 <hr>
 
 <p>Assign workers:</p>
+<div class = "row">
+    <div class = "col-md-2">Job:</div>
+    <div class = "col-md-2">Assign:</div>
+</div>
+<% units.worker.forEach(function(unit){ %>
+    <div class = "row">
+        <div class = "col-md-2"><%= unit.job %></div>
+        <div class = "col-md-6">
+            <% if (unit.job != "none"){ %>
+                <button class = "assign <%= unit.job  %>" data-action = "<%= unit.job  %>" data-id = <%= unit.id %> disabled><%= unit.jobMessage %></button>
+            <% } else { %>
+                <button class = "assign coin" data-action = "coin" data-id = <%= unit.id %>>Mine Coin</button>
+                <button class = "assign food" data-action = "food" data-id = <%= unit.id %>>Gather Food</button>
+            <% } %>
+
+        </div>
+    </div>
+<%})%>
 
 <% player.resources %>
 

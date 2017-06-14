@@ -30,6 +30,13 @@ var unitCost = {
 	"archer": 200
 }
 
+var names = ["Lisa", "Joseph", "Mara", "Athena", "Cassie", "Norra", "Brad", "Becky", 
+"Jason", "Farheed", "Anastasia", "Marcy", "Chegg", "Robert", "Nicholas", "Andrey", "Frank", "Joe"];
+
+var jobMessage = {
+	coin: "Mining coin",
+	food: "Gathering food"
+}
 
 
 /* Connecting to the DB */
@@ -208,7 +215,7 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 				}
 
 				dataops.findAction(db, "action", { $or: [ query_from, query_to]}, res, function getAllActions(all_actions){
-			    	dataops.find(db, "units", {owner: req.session.user.name}, res, function getAllUnits(units){
+			    	dataops.find(db, "unit", {owner: req.session.user.name}, res, function getAllUnits(units){
 			    		var current_player = all_players.filter(function(el){			// filter the current player by ID stored in session
 				    		return el._id == req.session.user._id;
 				    	});
@@ -217,15 +224,17 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			    			return unit.owner == req.session.user.name
 			    		})
 
-			    		var workerCount = all_units.filter(function(unit){ return unit.type =="worker" }).length;
-			    		var footmanCount = all_units.filter(function(unit){ return unit.type == "footman" }).length;
-			    		var archerCount = all_units.filter(function(unit){ return unit.type == "archer"  }).length;
+
+			    		var workers = all_units.filter(function(unit){ return unit.type =="worker" });
+			    		var footmen = all_units.filter(function(unit){ return unit.type == "footman" });
+			    		var archers = all_units.filter(function(unit){ return unit.type == "archer"  });
 
 			    		var player_units = {
-			    			worker: workerCount,
-			    			footman: footmanCount,
-			    			archer: archerCount
+			    			worker: workers,
+			    			footman: footmen,
+			    			archer: archers
 			    		}
+
 
 
 			    		res.render("game", {player: current_player[0], opponents: all_players, actions: all_actions, units: player_units});	
@@ -277,7 +286,9 @@ var text = "hello there!";
 			var newScout = {
 				type: "scout",
 				lastUpdated: Date.now(),
-				owner: newPlayer.name
+				owner: newPlayer.name,
+				job: "none",
+				id: Date.now()
 			}
 
 			dataops.addNewPlayer(db, "player", newPlayer, res, function addUnits(newPlayerMessage){
@@ -344,7 +355,7 @@ var text = "hello there!";
 
 	app.delete("/allplayers", function(req, res){
 		dataops.deletePlayer(db, "player", req.body, res, function(result){
-		res.send(result);
+			res.send(result);
 		});
 	});
 
@@ -528,7 +539,7 @@ var text = "hello there!";
 	    			playerQuery = {
 	    				name: req.session.user.name
 	    			}
-	    			
+
 	    			dataops.find(db, "player", playerQuery, res, function checkForCoin(thisPlayer){
 	    				console.log("Player has " + thisPlayer[0].resources.coin.count + " coin");
 
@@ -537,8 +548,10 @@ var text = "hello there!";
 	    					var newUnit = {
 	    						type: req.body.unit,
 	    						lastUpdated: Date.now(),
-	    						job: req.body.unit,
-	    						owner: thisPlayer[0].name
+	    						owner: thisPlayer[0].name,
+	    						job: "none",
+	    						jobMessage: "none",
+								id: Date.now()
 	    					}
 
 	    					var count = "resources.coin.count";
@@ -551,6 +564,7 @@ var text = "hello there!";
 	    						console.log("SERVER: Successfully updated player coin count!");
 
 		    						dataops.add(db, "unit", newUnit, res, function createUnitForPlayer(newUnit){		// this creates the new unit
+		    							
 		    							var unitQuery = {
 		    								owner: thisPlayer[0].name,
 		    								type: req.body.unit
@@ -575,6 +589,56 @@ var text = "hello there!";
 
 	    		
 	    	}
+
+	    	if(req.body.action == "assign"){
+
+	    		/*
+					1. look up the unit's owner 
+					2. check that unit exists
+					3. update worker status
+	    		*/
+
+	    		var unitQuery = {
+	    			id: parseInt(req.body.id)
+	    		}
+
+	    		dataops.find(db, "unit", unitQuery, res, function findUnit(unit){
+	    			if(unit.length == 1){
+
+	    				var updateQuery = {
+	    					jobMessage: jobMessage[req.body.job],
+	    					job: req.body.job
+	    				}
+/*			    		updateQuery["jobMessage"] = req.body.job;
+			    		updateQuery["job"] = req.body.job;*/
+
+			    		dataops.update(db, "unit", unitQuery , updateQuery, res, false, null, null, function confirmUpdatedUnit(updatedUnit){
+			    			console.log("changed unit's job to " + updatedUnit[0].job);
+			    			var response = {
+		    					message: "success!",
+		    					unit: updatedUnit[0]
+		    				}
+			    			res.send(response);
+			    		});
+
+
+	    			} else {
+	    				console.log("SERVER: this unit is ded.")
+
+	    				var response = {
+	    					message: "fail"
+	    				}
+
+	    				res.send(response)
+	    			}
+	    			
+	    		});
+
+
+	    		
+
+	    	}
+
     	} else {
     		console.log("can't attack - you're not logged in!");
     	}

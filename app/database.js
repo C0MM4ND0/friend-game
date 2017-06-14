@@ -135,7 +135,7 @@ function update(db, col, item, query, res, isArray, array, arrayAction, callback
 	} else {
 		db.collection(col).update(item, {$set: query}, function displayAfterUpdating(){
 			console.log("Updated successfully! New player stats: ");
-			find(db, col, {"name": item.name}, res, function showUpdated(updatedItem){
+			find(db, col, item, res, function showUpdated(updatedItem){
 				console.log("HERE IT IS:");
 				console.log(updatedItem[0]);
 				callback(updatedItem);
