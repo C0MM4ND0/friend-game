@@ -87,7 +87,14 @@ function deletePlayer(db, col, player, res, callback){
 					console.log("MAYDAY! MAYDAY! Crashing.");
 					return console.log(err);
 				}
-				callback(player.name + " successfully deleted");
+					db.collection("unit").remove({owner: player.name}, function removeAllUnits(err, deadUnits) {
+						if (err){
+							console.log("MAYDAY! MAYDAY! Crashing.");
+							return console.log(err);
+						}
+						console.log("units for deletion: " + JSON.stringify(deadUnits));
+						callback(player.name + " successfully deleted");
+					});
 			});
 		}
 		

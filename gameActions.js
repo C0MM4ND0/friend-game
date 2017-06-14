@@ -168,10 +168,23 @@ function main(){
                 if (result.message == "fail"){
                     $(".error").text("This unit no longer exists");
                 } else {
-                    console.log("successfully assigned unit! It's new job is: " + result.unit.job);
+                    console.log("successfully assigned unit! It's new job is: " + result.unit.job);     
                     var selector = '.assign[data-action="' + result.unit.job + '"][data-id=' + result.unit.id + ']';
                     console.log(" selecting: " + selector);
-                    $(selector).text(result.unit.jobMessage).prop("disabled",true);
+                    if(result.unit.job != "none"){
+                        console.log("assigning unit!");
+                        $(selector).text(result.unit.jobMessage).prop("disabled",true);
+                        $('.assign[data-id=' + result.unit.id + ']').not(selector).remove();
+                        $(selector).parent().append('<button class = "assign none" data-action = "none" data-id =' + result.unit.id + '>Stop</button>');
+                    } else {
+                        console.log("unassigning unit!");
+                        $(selector).parent().append('<button class = "assign coin" data-action = "coin" data-id =' + result.unit.id + '>Mine Coin</button>');
+                        $(selector).parent().append('<button class = "assign food" data-action = "food" data-id =' + result.unit.id + '>Gather Food</button>');
+                        selector = '.assign[data-action="' + unitAction + '"][data-id=' + result.unit.id + ']';
+                        console.log(" new selector: " + selector);
+                        $(selector).remove();
+                        $('.assign[data-action="none"][data-id='+ result.unit.id +']').remove();
+                    }
 
                 }
             }

@@ -4,7 +4,8 @@
     <div class = "col-md-8">
 
         <p>Player name: <%= player.name %></p>
-        <p>Coin: <span id = "coin"><%= player.resources.coin.count %></span></p>
+        <p>Coin: <span id = "coin"><%= player.resources.coin.count %></span><br>
+        Food: <span id = "food"><%= player.resources.food.count %></span></p>
         <p>Player capital:  <%= player.capital %></p>
         <p>
         	HP:  <span id = "hp"><%= player.stats.hp %></span> 
@@ -13,7 +14,9 @@
             <br>
             Workers:  <span class = "unit" id = "worker-count"><%= units.worker.length %></span>
         	<br>	
-        	Footmen:  <span class = "unit" id = "footman-count"><%= units.footman.length%></span>
+        	Scout:  <span class = "unit" id = "footman-count"><%= units.scout.length%></span>
+            <br>
+            Footmen:  <span class = "unit" id = "footman-count"><%= units.footman.length%></span>
         	<br>
             Archers:  <span class = "unit" id = "archer-count"><%= units.archer.length %></span>
         </p>
@@ -141,9 +144,10 @@
         <div class = "col-md-6">
             <% if (unit.job != "none"){ %>
                 <button class = "assign <%= unit.job  %>" data-action = "<%= unit.job  %>" data-id = <%= unit.id %> disabled><%= unit.jobMessage %></button>
+                <button class = "assign <%= unit.job  %>" data-action = "none" data-id = <%= unit.id %>>Stop</button>
             <% } else { %>
-                <button class = "assign coin" data-action = "coin" data-id = <%= unit.id %>>Mine Coin</button>
-                <button class = "assign food" data-action = "food" data-id = <%= unit.id %>>Gather Food</button>
+                    <button class = "assign coin" data-action = "coin" data-id = <%= unit.id %>>Mine Coin</button>
+                    <button class = "assign food" data-action = "food" data-id = <%= unit.id %>>Gather Food</button>
             <% } %>
 
         </div>

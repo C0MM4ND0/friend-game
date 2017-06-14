@@ -182,6 +182,82 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 	});
 
 
+	app.use(function addResources(req, res, next){
+
+		/*
+			1. find all unit where the job isn't "none"
+			2. add 10 to the onwer's corresponding resource
+			3. update the unit's "last update" 
+			3. rewrite code till this works
+		*/
+
+		var updateInterval = 20;			// in seconds
+
+		var unitQuery = {
+			type: "worker",
+			job: {
+				$ne: "none"
+			}			
+		}
+
+		// look up all working worker units
+
+		dataops.find(db, "unit", unitQuery, res, function allWorkingUnits(units){
+			if(units.length > 0){
+				console.log("Found " + units.length + " units to process for resources");
+				actionCounter = 0;				// forcing synchrony :(
+				units.forEach(function(unit){
+
+					console.log("working on " + unit.type + ", id: " + unit.id);
+					//look up player for each of these
+
+					var playerQuery = {
+						name: unit.owner
+					}
+
+					dataops.find(db, "player", playerQuery, res, function queryPlayerForUpdate(player){
+						if(player.length > 0){
+							console.log("this " + unit.type + " belongs to " + player[0].name)
+
+							//update player's correct resource if it has been 10 seconds
+
+							var timeSinceLastUpdate = Math.floor(((Date.now() - unit.lastUpdated)/1000))			// need to figure out how much time to add here
+							var updatesDue = Math.floor(timeSinceLastUpdate/updateInterval);
+							var updateAtTime = Date.now() - ((Date.now() - unit.lastUpdated) - (timeSinceLastUpdate)*1000); // this HOPEFULLY gets that remainder between time now and time due for last update.
+
+							console.log("It has been " + timeSinceLastUpdate + " seconds since the last update. We're due " + updatesDue + " updates.");
+
+							if(updatesDue > 0){
+								var resourceCount = "resources." + unit.job + ".count";
+		    					var playerUpdateQuery = {}													// decrease how much coin the player has
+		    					var additionalResource = 1*player[0].stats.econ_level*updatesDue										// this is where the magic happens. 
+		    					playerUpdateQuery[resourceCount] = player[0]["resources"][unit.job]["count"] + additionalResource;		// this is where the magic happens. 
+								
+
+
+								// update the player's coin count
+								dataops.update(db, "player", playerQuery, playerUpdateQuery, false, null, null, res, function updateResource(updatedPlayer){
+									console.log("success! updated " + playerUpdateQuery.resource + " for player " + updatedPlayer[0].name);
+									dataops.update(db, "unit", {id: unit.id}, {lastUpdated: updateAtTime}, false, null, null, res, function updateUnitTime(updatedUnit){
+										console.log("success! updated " + updatedUnit[0].id);
+									})
+
+								})
+							}
+
+						} else {
+							console.log("weird, no such player named " + unit.owner + " for unit id: " + unit.id);
+						}
+					});
+
+				});
+				next();
+			} else {
+				console.log("No units to process for resources");
+				next();
+			}
+		});
+	});
 
 	app.get("/", function(req, res){
 	    res.render("index");
@@ -228,11 +304,13 @@ MongoClient.connect("mongodb://localhost:27017/conquest", function(err, database
 			    		var workers = all_units.filter(function(unit){ return unit.type =="worker" });
 			    		var footmen = all_units.filter(function(unit){ return unit.type == "footman" });
 			    		var archers = all_units.filter(function(unit){ return unit.type == "archer"  });
+			    		var scouts = all_units.filter(function(unit){ return unit.type == "scout"  });
 
 			    		var player_units = {
 			    			worker: workers,
 			    			footman: footmen,
-			    			archer: archers
+			    			archer: archers,
+			    			scout: scouts
 			    		}
 
 
@@ -274,10 +352,16 @@ var text = "hello there!";
 					hp: 100,
 					strength: 10,
 					walls: "wood",
+					econ_level: 1,
+					military_level: 1
 				},
 				resources: {
 					coin: {
 						count: 1000, 
+						lastUpdated: Date.now()
+					},
+					food: {
+						count: 0, 
 						lastUpdated: Date.now()
 					}
 				}
@@ -355,7 +439,7 @@ var text = "hello there!";
 
 	app.delete("/allplayers", function(req, res){
 		dataops.deletePlayer(db, "player", req.body, res, function(result){
-			res.send(result);
+		res.send(result);
 		});
 	});
 
@@ -556,7 +640,7 @@ var text = "hello there!";
 
 	    					var count = "resources.coin.count";
 
-	    					updatedStats = {}													// decrease how much coin the player has
+	    					var updatedStats = {}													// decrease how much coin the player has
 	    					updatedStats[count] = thisPlayer[0].resources.coin.count-unitCost[req.body.unit];
 
 
